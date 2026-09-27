@@ -29,7 +29,9 @@ export function StatusBar({ updatedAt, count, stale, warning, isFetching, onRefr
             <>
               <strong>Actualizado {formatRelativeTime(updatedAt)}</strong>
               <span className="statusbar-sub">
-                {' '}· Última actualización: {formatUpdatedAt(updatedAt)} · {count.toLocaleString('es-ES')} estaciones
+                {' '}
+                {count.toLocaleString('es-ES')} estaciones. Fuente MITECO,{' '}
+                {formatUpdatedAt(updatedAt)}
               </span>
             </>
           ) : (

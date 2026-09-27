@@ -2,6 +2,8 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react
 import { CheapestSection } from '../components/CheapestSection';
 import { FilterPanel } from '../components/FilterPanel';
 import { Header } from '../components/Header';
+import { MapErrorBoundary } from '../components/MapErrorBoundary';
+import { MarketStrip } from '../components/MarketStrip';
 import { StationDetail } from '../components/StationDetail';
 import { StationList } from '../components/StationList';
 import { StationListSkeleton, EmptyState, ErrorState } from '../components/States';
@@ -148,6 +150,8 @@ export function HomePage({ theme, onToggleTheme }: Props) {
           />
         ) : (
           <>
+            <MarketStrip stations={stations} fuel={filters.fuel} />
+
             {view === 'list' && (
               <CheapestSection
                 stations={filtered}
@@ -172,15 +176,17 @@ export function HomePage({ theme, onToggleTheme }: Props) {
             ) : view === 'list' ? (
               <StationList stations={filtered} fuel={filters.fuel} onSelect={openStation} />
             ) : (
-              <Suspense fallback={<StationListSkeleton count={3} />}>
-                <StationMap
-                  stations={filtered}
-                  fuel={filters.fuel}
-                  fitKey={fitKey}
-                  center={geo.location}
-                  onSelect={openStation}
-                />
-              </Suspense>
+              <MapErrorBoundary>
+                <Suspense fallback={<StationListSkeleton count={3} />}>
+                  <StationMap
+                    stations={filtered}
+                    fuel={filters.fuel}
+                    fitKey={fitKey}
+                    center={geo.location}
+                    onSelect={openStation}
+                  />
+                </Suspense>
+              </MapErrorBoundary>
             )}
           </>
         )}
