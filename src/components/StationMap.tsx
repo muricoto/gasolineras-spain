@@ -93,6 +93,23 @@ function ClusterLayer({
     }
   }, [index, bbox, zoom]);
 
+  // Mínimo y máximo del combustible activo por municipio: la más barata de
+  // cada ciudad va en verde y la más cara en rojo (si hay diferencia).
+  const cityRange = useMemo(() => {
+    const m = new Map<string, { min: number; max: number }>();
+    for (const s of byId.values()) {
+      const p = s.prices[fuel];
+      if (p === undefined || !s.municipality) continue;
+      const e = m.get(s.municipality);
+      if (!e) m.set(s.municipality, { min: p, max: p });
+      else {
+        if (p < e.min) e.min = p;
+        if (p > e.max) e.max = p;
+      }
+    }
+    return m;
+  }, [byId, fuel]);
+
   return (
     <>
       {clusters.map((c) => {
@@ -116,6 +133,15 @@ function ClusterLayer({
         const station = props.stationId ? byId.get(props.stationId) : undefined;
         if (!station) return null;
         const price = station.prices[fuel];
+        const range = station.municipality ? cityRange.get(station.municipality) : undefined;
+        const tone =
+          price !== undefined && range && range.max > range.min
+            ? price <= range.min
+              ? 'mk-cheap'
+              : price >= range.max
+                ? 'mk-dear'
+                : ''
+            : '';
         return (
           <Marker key={station.id} position={[lat, lng]} icon={dotIcon()}>
             {price !== undefined && (
@@ -125,9 +151,10 @@ function ClusterLayer({
                 offset={[0, -12]}
                 opacity={1}
                 interactive={false}
-                className="mk-price"
+                className={`mk-price ${tone}`}
               >
-                {formatPriceShort(price)}
+                <span className="mk-name">{station.name}</span>
+                <span className="mk-num">{formatPriceShort(price)}</span>
               </Tooltip>
             )}
             <Popup>

@@ -5,13 +5,12 @@ interface Props {
   updatedAt: string | null;
   count: number;
   stale: boolean;
-  warning?: string;
   isFetching: boolean;
   onRefresh: () => void;
 }
 
 /** Barra de estado: frescura de los datos + actualización manual. */
-export function StatusBar({ updatedAt, count, stale, warning, isFetching, onRefresh }: Props) {
+export function StatusBar({ updatedAt, count, stale, isFetching, onRefresh }: Props) {
   const [, tick] = useState(0);
 
   // Re-render cada 30 s para que "hace X min" siga siendo cierto.
@@ -60,11 +59,6 @@ export function StatusBar({ updatedAt, count, stale, warning, isFetching, onRefr
         </svg>
         {isFetching ? 'Actualizando…' : 'Actualizar ahora'}
       </button>
-      {stale && (
-        <p className="stale-warning">
-          {warning ?? 'Los datos mostrados corresponden a la última actualización disponible.'}
-        </p>
-      )}
     </div>
   );
 }

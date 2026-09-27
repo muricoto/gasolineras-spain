@@ -10,6 +10,8 @@ interface Props {
   view: 'list' | 'map';
   onView: (v: 'list' | 'map') => void;
   resultCount: number;
+  /** true mientras el texto escrito aún no se ha aplicado (debounce). */
+  pendingQuery: boolean;
   onReset: () => void;
   favorites: FavoriteSearch[];
   onSaveFavorite: (name: string) => void;
@@ -28,7 +30,7 @@ const RADIUS_OPTIONS: Array<{ value: number | null; label: string }> = [
 const MAX_PRICE_CAP = 3.0;
 
 /** Panel de filtros: combustible, territorio, precio, distancia y orden. */
-export function FilterPanel({ filters, patch, facets, location, view, onView, resultCount, onReset, favorites, onSaveFavorite, onApplyFavorite, onDeleteFavorite }: Props) {
+export function FilterPanel({ filters, patch, facets, location, view, onView, resultCount, pendingQuery, onReset, favorites, onSaveFavorite, onApplyFavorite, onDeleteFavorite }: Props) {
   const provinces = facets.provinces.filter(
     (p) => !filters.ccaaId || p.ccaaId === filters.ccaaId,
   );
@@ -125,23 +127,6 @@ export function FilterPanel({ filters, patch, facets, location, view, onView, re
         </div>
 
         <div className="field">
-          <label htmlFor="f-mun">Municipio</label>
-          <select
-            id="f-mun"
-            value={filters.municipality}
-            onChange={(e) => patch({ municipality: e.target.value })}
-            disabled={facets.municipalities.length === 0}
-          >
-            <option value="">Todos</option>
-            {facets.municipalities.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="field">
           <label htmlFor="f-sort">Ordenar</label>
           <select
             id="f-sort"
@@ -226,8 +211,14 @@ export function FilterPanel({ filters, patch, facets, location, view, onView, re
           </button>
         </div>
         <p className="result-count" role="status">
-          <strong>{resultCount.toLocaleString('es-ES')}</strong>{' '}
-          {resultCount === 1 ? 'gasolinera' : 'gasolineras'}
+          {pendingQuery ? (
+            'Buscando…'
+          ) : (
+            <>
+              <strong key={resultCount}>{resultCount.toLocaleString('es-ES')}</strong>{' '}
+              {resultCount === 1 ? 'gasolinera' : 'gasolineras'}
+            </>
+          )}
         </p>
         {modified && (
           <button type="button" className="btn btn-secondary btn-sm" onClick={onReset}>

@@ -1,6 +1,12 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Place } from '../hooks/useStationFilters';
+import { normalizeSearchText } from '../utils/format';
+
 interface Props {
   query: string;
   onQuery: (q: string) => void;
+  places: Place[];
+  onPickPlace: (p: Place) => void;
   locationStatus: string;
   hasLocation: boolean;
   onUseLocation: () => void;
@@ -19,10 +25,12 @@ function PumpIcon() {
   );
 }
 
-/** Cabecera: marca, buscador en tiempo real, ubicación y tema. */
+/** Cabecera: marca, buscador (texto libre + sugerencias de localidades), ubicación y tema. */
 export function Header({
   query,
   onQuery,
+  places,
+  onPickPlace,
   locationStatus,
   hasLocation,
   onUseLocation,
@@ -30,19 +38,64 @@ export function Header({
   theme,
   onToggleTheme,
 }: Props) {
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const activeRef = useRef<HTMLButtonElement | null>(null);
+
+  const matches = useMemo(() => {
+    const q = normalizeSearchText(query.trim());
+    if (!q) return [];
+    const out: Place[] = [];
+    for (const p of places) {
+      if (normalizeSearchText(p.name).includes(q)) {
+        out.push(p);
+        if (out.length >= 8) break;
+      }
+    }
+    return out;
+  }, [places, query]);
+
+  // Al cambiar el texto o los datos, la selección vuelve a la primera.
+  useEffect(() => {
+    setActive(0);
+  }, [query, places]);
+
+  // Mantiene visible la opción activa al navegar con el teclado.
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [active, open]);
+
+  // Cierra las sugerencias al pulsar fuera (pointerdown llega antes que el click).
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [open ]);
+
+  const pick = (p: Place) => {
+    setOpen(false);
+    onPickPlace(p);
+  };
+
+  const showSuggest = open && query.trim() !== '' && matches.length > 0;
+
   return (
     <header className="header">
       <div className="header-inner">
-        <a className="brand" href="/" aria-label="Fuel España, inicio">
+        <a className="brand" href="/" aria-label="Gasolineras España, inicio">
           <span className="brand-icon" aria-hidden="true">
             <PumpIcon />
           </span>
           <span className="brand-text">
-            Fuel <strong>España</strong>
+            Gasolineras <strong>España</strong>
           </span>
         </a>
 
-        <div className="search-wrap">
+        <div className="search-wrap" ref={wrapRef}>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="search-icon">
             <circle cx="11" cy="11" r="7" />
             <path d="m20 20-3.5-3.5" strokeLinecap="round" />
@@ -56,8 +109,25 @@ export function Header({
             className="search"
             placeholder="Buscar gasolinera, ciudad o provincia…"
             value={query}
-            onChange={(e) => onQuery(e.target.value)}
+            onChange={(e) => { onQuery(e.target.value); setOpen(true); }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown' && matches.length > 0) {
+                e.preventDefault();
+                setOpen(true);
+                setActive((a) => (a + 1) % matches.length);
+              } else if (e.key === 'ArrowUp' && matches.length > 0) {
+                e.preventDefault();
+                setOpen(true);
+                setActive((a) => (a - 1 + matches.length) % matches.length);
+              } else if (e.key === 'Enter' && matches.length > 0) pick(matches[active] ?? matches[0]);
+              else if (e.key === 'Escape') setOpen(false);
+            }}
             autoComplete="off"
+            role="combobox"
+            aria-expanded={showSuggest}
+            aria-controls="search-places"
+            aria-autocomplete="list"
           />
           {query && (
             <button
@@ -68,6 +138,27 @@ export function Header({
             >
               ✕
             </button>
+          )}
+          {showSuggest && (
+            <ul id="search-places" role="listbox" className="combo-list" aria-label="Localidades coincidentes">
+              {matches.map((p, i) => (
+                <li key={`${p.name}|${p.provinceId}`} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={i === active}
+                    aria-label={`${p.name}, ${p.province}`}
+                    className={i === active ? 'active' : undefined}
+                    ref={i === active ? activeRef : undefined}
+                    onMouseEnter={() => setActive(i)}
+                    onClick={() => pick(p)}
+                  >
+                    <strong>{p.name}</strong>
+                    <span>{p.province}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 

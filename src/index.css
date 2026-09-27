@@ -410,16 +410,6 @@ button { touch-action: manipulation; }
 
 .pulse-stale { background: var(--peligro); }
 
-.stale-warning {
-  flex-basis: 100%;
-  margin: 0;
-  background: var(--peligro-fondo);
-  border: 1.5px solid var(--peligro);
-  border-radius: var(--radio-sm);
-  padding: 0.5rem 0.75rem;
-  font-size: 0.85rem;
-}
-
 .geo-error { margin: 0; font-size: 0.85rem; color: var(--peligro); font-weight: 600; }
 
 /* ============ Filtros ============ */
@@ -508,6 +498,45 @@ fieldset.field { border: none; margin: 0; }
 
 .field select:disabled { opacity: 0.55; }
 
+/* ============ Sugerencias de localidades (cabecera) ============ */
+.combo-list {
+  position: absolute;
+  z-index: 600;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: var(--superficie);
+  border: var(--borde);
+  border-radius: var(--radio-sm);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.combo-list button {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--tinta);
+  padding: 0.55rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.combo-list button:hover { background: var(--superficie-2); }
+.combo-list button.active { background: var(--superficie-2); }
+.combo-list strong { font-weight: 600; text-transform: capitalize; }
+.combo-list span { color: var(--humo); font-size: 0.82rem; text-transform: capitalize; flex: none; }
+
 .field input[type="range"] {
   width: 100%;
   accent-color: var(--surtidor);
@@ -553,7 +582,18 @@ fieldset.field { border: none; margin: 0; }
 [data-theme="dark"] .view-toggle button.active { background: var(--senal); color: #2b2a20; }
 
 .result-count { margin: 0; font-size: 0.9rem; color: var(--humo); }
-.result-count strong { color: var(--tinta); font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.result-count strong {
+  display: inline-block;
+  color: var(--tinta);
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  animation: count-pop 0.25s ease;
+}
+
+@keyframes count-pop {
+  from { transform: scale(0.7); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
+}
 
 /* ============ Búsquedas favoritas ============ */
 .favorites {
@@ -868,13 +908,14 @@ fieldset.field { border: none; margin: 0; }
 .popup { font-family: var(--fuente); min-width: 170px; }
 .popup-name { font-size: 0.95rem; }
 
-/* Etiqueta de precio sobre cada marcador individual (Tooltip permanente). */
+/* Etiqueta de precio sobre cada marcador individual (Tooltip permanente).
+   Blanca siempre (también en oscuro) para distinguirla del cluster oscuro. */
 .leaflet-tooltip.mk-price {
-  background: var(--asfalto);
-  border: 1.5px solid var(--senal);
+  background: #ffffff;
+  border: 1.5px solid #20302a;
   border-radius: 7px;
-  box-shadow: none;
-  color: var(--senal);
+  box-shadow: 0 1px 6px rgb(0 0 0 / 0.25);
+  color: #20302a;
   font-family: var(--fuente);
   font-size: 0.72rem;
   font-weight: 800;
@@ -885,6 +926,31 @@ fieldset.field { border: none; margin: 0; }
 }
 
 .leaflet-tooltip.mk-price::before { display: none; }
+
+/* Nombre + precio dentro de la etiqueta; el número va en verde/rojo si es
+   la más barata/cara de su municipio. */
+.mk-price .mk-name {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #5b6b62;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.mk-price .mk-num {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #d97706;
+}
+
+.mk-price.mk-cheap .mk-num { color: #18794e; }
+.mk-price.mk-dear .mk-num { color: #b3261e; }
 .popup-place { margin: 0.15rem 0; color: var(--humo); font-size: 0.82rem; text-transform: capitalize; }
 .popup-price { margin: 0.25rem 0 0.5rem; font-size: 0.88rem; }
 

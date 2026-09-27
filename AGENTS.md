@@ -30,6 +30,9 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
 - Preferencias persistentes: `useStationFilters.ts` guarda en `localStorage` (`fuel-espana-filters`, validado al leer, query con debounce). Prioridad al arrancar: URL con params > localStorage > defecto. Un enlace compartido nunca queda contaminado por lo guardado.
 - Favoritas: mismo hook (`fuel-espana-favorites`, `{ id, name, filters }`, sin duplicados exactos). Nombre auto (`"Villarrobledo · Diésel"`) en `FilterPanel.tsx`; aplicar sustituye todos los filtros (saneados).
 - Nueva búsqueda de texto (vacío → texto) resetea todos los filtros salvo el combustible (`newSearch` en el hook, usado en `HomePage.tsx`); refinar el texto no toca nada. Botón "Limpiar filtros" en el pie del panel cuando hay filtros activos.
+- El buscador de la cabecera sugiere localidades (`places` en facetas, `normalizeSearchText`); elegir fija municipio+provincia+CCAA y muestra el nombre en la caja; editar el texto suelta el candado. Sin banner de caché caducada (solo punto rojo).
+- Al conceder ubicación se resetea la búsqueda (el orden queda siempre de menor a mayor); al quitarla, si ordenaba por distancia vuelve a precio.
+- Tema inicial siempre claro (`App.tsx`); etiquetas de mapa blancas (`.mk-price`) frente a clusters oscuros.
 
 ## Responsive
 

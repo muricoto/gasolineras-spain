@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CheapestSection } from '../components/CheapestSection';
 import { FilterPanel } from '../components/FilterPanel';
 import { Header } from '../components/Header';
@@ -11,7 +11,9 @@ import { StatusBar } from '../components/StatusBar';
 import { useFuelStations } from '../hooks/useFuelStations';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useStationFilters } from '../hooks/useStationFilters';
+import type { Place } from '../hooks/useStationFilters';
 import type { FuelStation } from '../types/fuel';
+import { normalizeSearchText } from '../utils/format';
 
 const StationMap = lazy(() =>
   import('../components/StationMap').then((m) => ({ default: m.StationMap })),
@@ -52,10 +54,10 @@ function viewFromUrl(): 'list' | 'map' {
 
 /** Página principal: listado/buscador de gasolineras. */
 export function HomePage({ theme, onToggleTheme }: Props) {
-  const { stations, updatedAt, stale, warning, isLoading, isFetching, isError, error, refetch } =
+  const { stations, updatedAt, stale, isLoading, isFetching, isError, error, refetch } =
     useFuelStations();
   const geo = useGeolocation();
-  const { filters, patch, reset, newSearch, facets, filtered, favorites, saveFavorite, applyFavorite, deleteFavorite } =
+  const { filters, patch, reset, newSearch, facets, filtered, debouncedQuery, favorites, saveFavorite, applyFavorite, deleteFavorite } =
     useStationFilters(stations, geo.location);
 
   const [view, setView] = useState<'list' | 'map'>(viewFromUrl);
@@ -73,6 +75,30 @@ export function HomePage({ theme, onToggleTheme }: Props) {
       /* noop */
     }
   }, []);
+
+  // Elegir una localidad en el buscador: fija municipio + provincia + CCAA
+  // y muestra su nombre en la caja (filtro exacto y texto coinciden).
+  const pickPlace = useCallback((p: Place) => {
+    patch({ municipality: p.name, provinceId: p.provinceId, ccaaId: p.ccaaId, query: p.name });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Al conceder la ubicación: resetea la búsqueda anterior. El orden se
+  // mantiene siempre de menor a mayor (las cercanas se acotan con el radio).
+  // Solo una vez por concesión.
+  const prevGeoStatus = useRef(geo.status);
+  useEffect(() => {
+    if (geo.status === 'granted' && prevGeoStatus.current !== 'granted') {
+      reset();
+    }
+    prevGeoStatus.current = geo.status;
+  }, [geo.status]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sin ubicación no tiene sentido ordenar por distancia: vuelve a precio.
+  useEffect(() => {
+    if (!geo.location && filters.sort === 'distance') {
+      patch({ sort: 'price-asc' });
+    }
+  }, [geo.location, filters.sort]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openStation = useCallback((s: FuelStation) => {
     setSelected(s);
@@ -111,11 +137,16 @@ export function HomePage({ theme, onToggleTheme }: Props) {
       <Header
         query={filters.query}
         onQuery={(q) => {
-          // Nueva búsqueda de texto (de vacío a texto): resetea todos los
-          // filtros salvo el combustible. Refinar el texto no toca nada.
+          // Búsqueda nueva (de vacío a texto): resetea todos los filtros
+          // salvo el combustible. Si se edita el texto tras fijar una
+          // localidad y ya no coincide, se suelta el candado exacto.
           if (!filters.query && q) newSearch(q);
-          else patch({ query: q });
+          else if (filters.municipality && normalizeSearchText(q) !== normalizeSearchText(filters.municipality)) {
+            patch({ query: q, municipality: '' });
+          } else patch({ query: q });
         }}
+        places={facets.places}
+        onPickPlace={pickPlace}
         locationStatus={geo.status}
         hasLocation={geo.location !== null}
         onUseLocation={geo.request}
@@ -129,7 +160,6 @@ export function HomePage({ theme, onToggleTheme }: Props) {
           updatedAt={updatedAt}
           count={stations.length}
           stale={stale}
-          warning={warning}
           isFetching={isFetching}
           onRefresh={() => refetch()}
         />
@@ -175,6 +205,7 @@ export function HomePage({ theme, onToggleTheme }: Props) {
               view={view}
               onView={changeView}
               resultCount={filtered.length}
+              pendingQuery={filters.query !== debouncedQuery}
               onReset={reset}
               favorites={favorites}
               onSaveFavorite={saveFavorite}

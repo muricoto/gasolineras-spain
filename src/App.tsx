@@ -20,7 +20,8 @@ function getInitialTheme(): 'light' | 'dark' {
   } catch {
     /* sin localStorage */
   }
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  // Primera visita: siempre claro (no se hereda el tema del sistema).
+  return 'light';
 }
 
 export function App() {

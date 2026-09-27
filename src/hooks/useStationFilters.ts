@@ -153,10 +153,18 @@ function writeToUrl(f: StationFilters) {
   window.history.replaceState(null, '', url);
 }
 
+export interface Place {
+  name: string;
+  provinceId: string;
+  province: string;
+  ccaaId: string;
+}
+
 export interface Facets {
   ccaas: { id: string; name: string }[];
   provinces: { id: string; name: string; ccaaId: string }[];
-  municipalities: string[];
+  /** Índice global municipio → provincia + CCAA (para el buscador de localidades). */
+  places: Place[];
 }
 
 /**
@@ -205,13 +213,14 @@ export function useStationFilters(stations: FuelStation[], location: UserLocatio
     setFilters((f) => {
       const next = { ...f, ...p };
       // Al cambiar de CCAA se resetea provincia/municipio; al cambiar
-      // provincia se resetea municipio.
+      // provincia se resetea municipio. Si el patch ya trae el nivel
+      // inferior (p. ej. al elegir localidad), se respeta y no se borra.
       if (p.ccaaId !== undefined && p.ccaaId !== f.ccaaId) {
-        next.provinceId = '';
-        next.municipality = '';
+        if (p.provinceId === undefined) next.provinceId = '';
+        if (p.municipality === undefined) next.municipality = '';
       }
       if (p.provinceId !== undefined && p.provinceId !== f.provinceId) {
-        next.municipality = '';
+        if (p.municipality === undefined) next.municipality = '';
       }
       return next;
     });
@@ -250,24 +259,33 @@ export function useStationFilters(stations: FuelStation[], location: UserLocatio
 
   const deleteFavorite = (id: string) => setFavorites((list) => list.filter((f) => f.id !== id));
 
-  /** Facetas derivadas de los datos (provincias, municipios). */
+  /** Facetas derivadas de los datos (provincias e índice de localidades). */
   const facets: Facets = useMemo(() => {
     const provMap = new Map<string, { id: string; name: string; ccaaId: string }>();
-    const munSet = new Set<string>();
+    const placeMap = new Map<string, Place>();
     for (const s of stations) {
       if (s.provinceId) {
         if (!provMap.has(s.provinceId)) {
           provMap.set(s.provinceId, { id: s.provinceId, name: s.province, ccaaId: s.autonomousCommunityId });
         }
       }
-      if (!filters.provinceId || s.provinceId === filters.provinceId) {
-        if (s.municipality) munSet.add(s.municipality);
+      if (s.municipality) {
+        const key = `${s.municipality}|${s.provinceId}`;
+        if (!placeMap.has(key)) {
+          placeMap.set(key, {
+            name: s.municipality,
+            provinceId: s.provinceId,
+            province: s.province,
+            ccaaId: s.autonomousCommunityId,
+          });
+        }
       }
     }
     const provinces = [...provMap.values()].sort((a, b) => a.name.localeCompare(b.name, 'es'));
     const ccaas = Object.entries(CCAA_NAMES).map(([id, name]) => ({ id, name }));
-    return { ccaas, provinces, municipalities: [...munSet].sort((a, b) => a.localeCompare(b, 'es')) };
-  }, [stations, filters.provinceId]);
+    const places = [...placeMap.values()].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    return { ccaas, provinces, places };
+  }, [stations]);
 
   const filtered = useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();

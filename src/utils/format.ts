@@ -22,6 +22,14 @@ export function formatPriceShort(value: number | undefined): string {
   return shortFormatter.format(value);
 }
 
+/**
+ * Normaliza para búsqueda tolerante ("avila" encuentra "Ávila").
+ * Tras NFD, quita todo lo que no sea letra/número/espacio (ASCII seguro).
+ */
+export function normalizeSearchText(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[^a-z0-9\s]/g, '');
+}
+
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   day: 'numeric',
   month: 'short',

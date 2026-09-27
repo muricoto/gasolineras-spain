@@ -113,7 +113,7 @@ server/         proxy Express al MITECO
 - El mapa agrupa con **supercluster** y limita a 4.000 marcadores con aviso.
 - Búsqueda con debounce (250 ms); filtrado/ordenación con `useMemo`.
 - Mapa en chunk separado (`React.lazy`): no se descarga hasta abrir la vista.
-- TanStack Query: `staleTime` 10 min, `gcTime` 60 min, `refetchInterval` 15 min (solo con la pestaña visible), `retry` 2. Si un refetch falla, se conservan los datos anteriores; si el proxy sirve caché caducada, la UI lo indica.
+- TanStack Query: `staleTime` 10 min, `gcTime` 60 min, `refetchInterval` 15 min (solo con la pestaña visible), `retry` 2. Si un refetch falla, se conservan los datos anteriores; si el proxy sirve caché caducada, solo el punto de estado se vuelve rojo (sin banner).
 
 ## URLs compartibles
 
