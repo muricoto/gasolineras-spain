@@ -54,6 +54,7 @@ export function ErrorState({
   isRetrying: boolean;
 }) {
 
+  console.log('ERROR', message);
   return (
     <div className="state" role="alert">
       <div className="state-icon state-icon-error" aria-hidden="true">

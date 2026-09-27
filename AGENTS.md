@@ -41,3 +41,4 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
 - `vite.config.ts` usa `base: './'` (no volver a `/`: rompe en `file://`). Favicon relativo en `index.html`.
 - La API es configurable: `src/services/fuelStationsService.ts` antepone `VITE_API_URL` (vacío en web → relativo). Compilar la APK con `VITE_API_URL=https://<backend-público>`; sin backend público la APK abre pero sin datos.
 - Flujo: `npm run build` → `npx cap sync android` → abrir `android/` en Android Studio → Run. Emulador contra backend local: `http://10.0.2.2:3001`; dispositivo físico: `http://<IP-del-PC>:3001`.
+- Build para APK con datos reales: `$env:VITE_API_URL="https://fuel-espana.onrender.com"; npm run build` (PowerShell, solo esa compilación; no guardar en `.env` para no romper el proxy local en dev).
