@@ -31,9 +31,13 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
 - Favoritas: mismo hook (`fuel-espana-favorites`, `{ id, name, filters }`, sin duplicados exactos). Nombre auto (`"Villarrobledo · Diésel"`) en `FilterPanel.tsx`; aplicar sustituye todos los filtros (saneados).
 - Nueva búsqueda de texto (vacío → texto) resetea todos los filtros salvo el combustible (`newSearch` en el hook, usado en `HomePage.tsx`); refinar el texto no toca nada. Botón "Limpiar filtros" en el pie del panel cuando hay filtros activos.
 
-## Responsive / Capacitor (Android)
+## Responsive
 
-- Base ya mobile-first (`src/index.css`): grid 1 → 2 → 3 cols, `filter-grid` 2 → 3 → 5, modal como bottom-sheet en móvil, rail horizontal en `cheapest-row`.
-- Convenciones a mantener: `viewport-fit=cover` en `index.html`; `100dvh` (con fallback `100vh`) y alturas de mapa en `dvh`; `env(safe-area-inset-*)` en header, `.container` y modal; `font-size: 16px` en inputs/selects (evita zoom en iOS); `touch-action: manipulation` en botones y `pan-x pan-y` en `.map`; targets táctiles ≥ 44px en móvil (ver `@media (max-width: 599px)`).
-- En pantallas < 600px el buscador ocupa su propia fila (`order: 3`, 100% ancho); no volver a una sola fila.
-- Al añadir Capacitor: hace falta `base: './'` en `vite.config.ts` (hoy es `/` por defecto), `webDir: 'dist'`, y la app usará `navigator.geolocation` del WebView (revisar `hooks/useGeolocation.ts` y permisos en `AndroidManifest.xml`). El proxy Express no viaja en la app: la APK debe apuntar a una URL pública de `/api/stations`, no a `localhost:3001`.
+- Mobile-first: grid 1 → 2 → 3 cols, cabecera en grid <600px (buscador en fila propia), `100dvh`, `env(safe-area-inset-*)`, inputs a 16px, targets ≥44px.
+
+## Capacitor (Android)
+
+- Integrado: `@capacitor/core`, `cli`, `android`; `capacitor.config.ts` (`appId es.fuel.spainFuel`, `webDir dist`); plataforma en `android/` (permisos de ubicación en `AndroidManifest.xml`).
+- `vite.config.ts` usa `base: './'` (no volver a `/`: rompe en `file://`). Favicon relativo en `index.html`.
+- La API es configurable: `src/services/fuelStationsService.ts` antepone `VITE_API_URL` (vacío en web → relativo). Compilar la APK con `VITE_API_URL=https://<backend-público>`; sin backend público la APK abre pero sin datos.
+- Flujo: `npm run build` → `npx cap sync android` → abrir `android/` en Android Studio → Run. Emulador contra backend local: `http://10.0.2.2:3001`; dispositivo físico: `http://<IP-del-PC>:3001`.

@@ -1,0 +1,16 @@
+# Blueprint de Render: despliega backend + frontend con un clic
+# (Dashboard → New → Blueprint → conecta este repo).
+# Render inyecta PORT solo; el servidor lo lee de process.env.PORT.
+services:
+  - type: web
+    name: fuel-espana
+    runtime: node
+    plan: free
+    buildCommand: npm install; npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: MITECO_API_URL
+        value: https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes
+      - key: CACHE_TTL_MS
+        value: 900000

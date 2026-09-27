@@ -53,6 +53,7 @@ export function ErrorState({
   onRetry: () => void;
   isRetrying: boolean;
 }) {
+
   return (
     <div className="state" role="alert">
       <div className="state-icon state-icon-error" aria-hidden="true">

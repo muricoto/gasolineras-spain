@@ -88,7 +88,11 @@ export function normalizeFuelStation(
 }
 
 export async function fetchStations(): Promise<StationsResult> {
-  const data = await fetchJson<StationsApiResponse>('/api/stations');
+  // En web es relativo (/api/stations, proxy Vite o mismo origen en prod).
+  // En la APK de Capacitor hay que compilar con VITE_API_URL apuntando al
+  // backend desplegado (p. ej. https://api.tudominio.es).
+  const base = import.meta.env.VITE_API_URL ?? '';
+  const data = await fetchJson<StationsApiResponse>(`${base}/api/stations`);
   const updatedAt = parseMitecoFecha(data.fecha, data.updatedAt);
   const stations = data.stations.map((raw) => normalizeFuelStation(raw, updatedAt));
   return { stations, updatedAt, stale: data.stale, warning: data.warning };
