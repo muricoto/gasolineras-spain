@@ -22,6 +22,91 @@ const DEFAULT_FILTERS: StationFilters = {
   radiusKm: null,
 };
 
+/** Clave de localStorage donde se guardan las preferencias de búsqueda. */
+const STORAGE_KEY = 'fuel-espana-filters';
+
+/** true si la URL trae algún filtro (enlace compartido): manda sobre lo guardado. */
+function hasUrlParams(): boolean {
+  try {
+    const p = new URLSearchParams(window.location.search);
+    return ['q', 'fuel', 'cc', 'prov', 'mun', 'maxPrice', 'sort', 'radius'].some((k) => {
+      const v = p.get(k);
+      return v !== null && v !== '';
+    });
+  } catch {
+    return false;
+  }
+}
+
+/** Sanea unos filtros parciales (de storage o de favoritas): nunca se confía en el dato. */
+function sanitizeFilters(s: Partial<StationFilters>): StationFilters {
+  return {
+    query: typeof s.query === 'string' ? s.query : '',
+    fuel: isFuelKey(typeof s.fuel === 'string' ? s.fuel : null)
+      ? (s.fuel as FuelKey)
+      : 'gasoline95',
+    ccaaId: typeof s.ccaaId === 'string' ? s.ccaaId : '',
+    provinceId: typeof s.provinceId === 'string' ? s.provinceId : '',
+    municipality: typeof s.municipality === 'string' ? s.municipality : '',
+    maxPrice: typeof s.maxPrice === 'number' && Number.isFinite(s.maxPrice) ? s.maxPrice : null,
+    sort: s.sort === 'price-desc' || s.sort === 'distance' || s.sort === 'name' ? s.sort : 'price-asc',
+    radiusKm: typeof s.radiusKm === 'number' && Number.isFinite(s.radiusKm) ? s.radiusKm : null,
+  };
+}
+
+/** Preferencias guardadas de visitas anteriores. */
+function readFromStorage(): StationFilters | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const s: unknown = JSON.parse(raw);
+    if (!s || typeof s !== 'object') return null;
+    return sanitizeFilters(s as Partial<StationFilters>);
+  } catch {
+    return null;
+  }
+}
+
+/** Búsqueda guardada como favorita. */
+export interface FavoriteSearch {
+  id: string;
+  name: string;
+  filters: StationFilters;
+}
+
+const FAVORITES_KEY = 'fuel-espana-favorites';
+
+function readFavorites(): FavoriteSearch[] {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    if (!raw) return [];
+    const arr: unknown = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter(
+        (f): f is { id: unknown; name: unknown; filters: unknown } =>
+          !!f && typeof f === 'object',
+      )
+      .filter((f) => typeof f.id === 'string' && typeof f.name === 'string' && !!f.filters)
+      .map((f) => ({
+        id: f.id as string,
+        name: f.name as string,
+        filters: sanitizeFilters(f.filters as Partial<StationFilters>),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function newId(): string {
+  try {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  } catch {
+    /* sin crypto */
+  }
+  return `fav-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+}
+
 function readFromUrl(): StationFilters {
   const p = new URLSearchParams(window.location.search);
   const fuel = p.get('fuel');
@@ -75,13 +160,15 @@ export interface Facets {
 }
 
 /**
- * Estado de filtros sincronizado con la URL (filtros compartibles),
- * filtrado/ordenación memoizados y cálculo de distancias.
+ * Estado de filtros sincronizado con la URL (filtros compartibles) y con
+ * localStorage (preferencias del usuario entre visitas).
+ * Prioridad al arrancar: URL con params > localStorage > valores por defecto.
  */
 export function useStationFilters(stations: FuelStation[], location: UserLocation | null) {
   const [filters, setFilters] = useState<StationFilters>(() => {
     try {
-      return readFromUrl();
+      if (hasUrlParams()) return readFromUrl();
+      return readFromStorage() ?? DEFAULT_FILTERS;
     } catch {
       return DEFAULT_FILTERS;
     }
@@ -102,7 +189,15 @@ export function useStationFilters(stations: FuelStation[], location: UserLocatio
   }, []);
 
   useEffect(() => {
-    writeToUrl({ ...filters, query: debouncedQuery });
+    const snapshot = { ...filters, query: debouncedQuery };
+    writeToUrl(snapshot);
+    // Guarda las preferencias para la próxima visita (query con debounce
+    // para no escribir en cada tecla; localStorage puede fallar en privado).
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    } catch {
+      /* almacenamiento no disponible */
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQuery, filters.fuel, filters.ccaaId, filters.provinceId, filters.municipality, filters.maxPrice, filters.sort, filters.radiusKm]);
 
@@ -122,6 +217,38 @@ export function useStationFilters(stations: FuelStation[], location: UserLocatio
     });
 
   const reset = () => setFilters((f) => ({ ...DEFAULT_FILTERS, query: '', fuel: f.fuel }));
+
+  /**
+   * Nueva búsqueda de texto: limpia todos los filtros salvo el combustible
+   * (el carburante es preferencia estable, no contexto de búsqueda).
+   */
+  const newSearch = (query: string) =>
+    setFilters((f) => ({ ...DEFAULT_FILTERS, fuel: f.fuel, query }));
+
+  const [favorites, setFavorites] = useState<FavoriteSearch[]>(readFavorites);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    } catch {
+      /* almacenamiento no disponible */
+    }
+  }, [favorites]);
+
+  /** Guarda la búsqueda actual como favorita (sin duplicados exactos). */
+  const saveFavorite = (name: string) => {
+    const snapshot = sanitizeFilters({ ...filters, query: debouncedQuery });
+    const key = JSON.stringify(snapshot);
+    setFavorites((list) => {
+      if (list.some((f) => JSON.stringify(f.filters) === key)) return list;
+      return [...list, { id: newId(), name: name.trim() || 'Búsqueda guardada', filters: snapshot }];
+    });
+  };
+
+  /** Aplica una favorita (sustituye todos los filtros). */
+  const applyFavorite = (fav: FavoriteSearch) => setFilters(sanitizeFilters(fav.filters));
+
+  const deleteFavorite = (id: string) => setFavorites((list) => list.filter((f) => f.id !== id));
 
   /** Facetas derivadas de los datos (provincias, municipios). */
   const facets: Facets = useMemo(() => {
@@ -188,5 +315,5 @@ export function useStationFilters(stations: FuelStation[], location: UserLocatio
     return out;
   }, [stations, debouncedQuery, filters, location]);
 
-  return { filters, patch, reset, facets, filtered, debouncedQuery };
+  return { filters, patch, reset, newSearch, facets, filtered, debouncedQuery, favorites, saveFavorite, applyFavorite, deleteFavorite };
 }

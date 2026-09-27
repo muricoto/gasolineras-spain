@@ -55,7 +55,8 @@ export function HomePage({ theme, onToggleTheme }: Props) {
   const { stations, updatedAt, stale, warning, isLoading, isFetching, isError, error, refetch } =
     useFuelStations();
   const geo = useGeolocation();
-  const { filters, patch, reset, facets, filtered } = useStationFilters(stations, geo.location);
+  const { filters, patch, reset, newSearch, facets, filtered, favorites, saveFavorite, applyFavorite, deleteFavorite } =
+    useStationFilters(stations, geo.location);
 
   const [view, setView] = useState<'list' | 'map'>(viewFromUrl);
   const [selected, setSelected] = useState<FuelStation | null>(null);
@@ -109,7 +110,12 @@ export function HomePage({ theme, onToggleTheme }: Props) {
     <>
       <Header
         query={filters.query}
-        onQuery={(q) => patch({ query: q })}
+        onQuery={(q) => {
+          // Nueva búsqueda de texto (de vacío a texto): resetea todos los
+          // filtros salvo el combustible. Refinar el texto no toca nada.
+          if (!filters.query && q) newSearch(q);
+          else patch({ query: q });
+        }}
         locationStatus={geo.status}
         hasLocation={geo.location !== null}
         onUseLocation={geo.request}
@@ -169,6 +175,11 @@ export function HomePage({ theme, onToggleTheme }: Props) {
               view={view}
               onView={changeView}
               resultCount={filtered.length}
+              onReset={reset}
+              favorites={favorites}
+              onSaveFavorite={saveFavorite}
+              onApplyFavorite={applyFavorite}
+              onDeleteFavorite={deleteFavorite}
             />
 
             {filtered.length === 0 ? (

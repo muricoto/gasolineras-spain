@@ -1,5 +1,5 @@
 import { FUELS, MAIN_FUELS, getFuelLabel } from '../data/fuels';
-import type { Facets, } from '../hooks/useStationFilters';
+import type { Facets, FavoriteSearch } from '../hooks/useStationFilters';
 import type { FuelKey, SortKey, StationFilters, UserLocation } from '../types/fuel';
 
 interface Props {
@@ -10,6 +10,11 @@ interface Props {
   view: 'list' | 'map';
   onView: (v: 'list' | 'map') => void;
   resultCount: number;
+  onReset: () => void;
+  favorites: FavoriteSearch[];
+  onSaveFavorite: (name: string) => void;
+  onApplyFavorite: (fav: FavoriteSearch) => void;
+  onDeleteFavorite: (id: string) => void;
 }
 
 const RADIUS_OPTIONS: Array<{ value: number | null; label: string }> = [
@@ -23,10 +28,31 @@ const RADIUS_OPTIONS: Array<{ value: number | null; label: string }> = [
 const MAX_PRICE_CAP = 3.0;
 
 /** Panel de filtros: combustible, territorio, precio, distancia y orden. */
-export function FilterPanel({ filters, patch, facets, location, view, onView, resultCount }: Props) {
+export function FilterPanel({ filters, patch, facets, location, view, onView, resultCount, onReset, favorites, onSaveFavorite, onApplyFavorite, onDeleteFavorite }: Props) {
   const provinces = facets.provinces.filter(
     (p) => !filters.ccaaId || p.ccaaId === filters.ccaaId,
   );
+
+  const modified =
+    filters.query !== '' ||
+    filters.fuel !== 'gasoline95' ||
+    filters.ccaaId !== '' ||
+    filters.provinceId !== '' ||
+    filters.municipality !== '' ||
+    filters.maxPrice !== null ||
+    filters.sort !== 'price-asc' ||
+    filters.radiusKm !== null;
+
+  /** Nombre automático: "Villarrobledo · Diésel", "Albacete · Gasolina 95"... */
+  const favoriteName = () => {
+    const place =
+      filters.query.trim() ||
+      filters.municipality ||
+      provinces.find((p) => p.id === filters.provinceId)?.name ||
+      facets.ccaas.find((c) => c.id === filters.ccaaId)?.name ||
+      'Toda España';
+    return `${place} · ${getFuelLabel(filters.fuel)}`;
+  };
 
   return (
     <section className="filters" aria-label="Filtros de búsqueda">
@@ -203,6 +229,47 @@ export function FilterPanel({ filters, patch, facets, location, view, onView, re
           <strong>{resultCount.toLocaleString('es-ES')}</strong>{' '}
           {resultCount === 1 ? 'gasolinera' : 'gasolineras'}
         </p>
+        {modified && (
+          <button type="button" className="btn btn-secondary btn-sm" onClick={onReset}>
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
+      <div className="favorites">
+        <p className="fav-title">Búsquedas favoritas</p>
+        {favorites.length > 0 && (
+          <div className="fav-row" role="list" aria-label="Búsquedas guardadas">
+            {favorites.map((f) => (
+              <span key={f.id} className="chip chip-sm fav" role="listitem">
+                <button
+                  type="button"
+                  className="fav-apply"
+                  onClick={() => onApplyFavorite(f)}
+                  title={`Aplicar búsqueda: ${f.name}`}
+                >
+                  {f.name}
+                </button>
+                <button
+                  type="button"
+                  className="fav-del"
+                  onClick={() => onDeleteFavorite(f.id)}
+                  aria-label={`Eliminar favorita ${f.name}`}
+                  title="Eliminar"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm fav-save"
+          onClick={() => onSaveFavorite(favoriteName())}
+        >
+          ★ Guardar búsqueda actual
+        </button>
       </div>
     </section>
   );

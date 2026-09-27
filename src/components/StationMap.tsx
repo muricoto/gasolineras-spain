@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import Supercluster from 'supercluster';
 import { getFuelLabel } from '../data/fuels';
 import type { FuelKey, FuelStation } from '../types/fuel';
-import { formatPrice } from '../utils/format';
+import { formatPrice, formatPriceShort } from '../utils/format';
 
 const MAX_MARKERS = 4000;
 
@@ -115,8 +115,21 @@ function ClusterLayer({
         }
         const station = props.stationId ? byId.get(props.stationId) : undefined;
         if (!station) return null;
+        const price = station.prices[fuel];
         return (
           <Marker key={station.id} position={[lat, lng]} icon={dotIcon()}>
+            {price !== undefined && (
+              <Tooltip
+                permanent
+                direction="top"
+                offset={[0, -12]}
+                opacity={1}
+                interactive={false}
+                className="mk-price"
+              >
+                {formatPriceShort(price)}
+              </Tooltip>
+            )}
             <Popup>
               <div className="popup">
                 <strong className="popup-name">{station.name}</strong>

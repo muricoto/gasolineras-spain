@@ -11,6 +11,17 @@ export function formatPrice(value: number | undefined): string {
   return `${priceFormatter.format(value)}/l`;
 }
 
+const shortFormatter = new Intl.NumberFormat('es-ES', {
+  minimumFractionDigits: 3,
+  maximumFractionDigits: 3,
+});
+
+/** 1.489 → "1,489" (etiquetas compactas, p. ej. marcadores del mapa). */
+export function formatPriceShort(value: number | undefined): string {
+  if (value === undefined || Number.isNaN(value)) return '—';
+  return shortFormatter.format(value);
+}
+
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   day: 'numeric',
   month: 'short',
