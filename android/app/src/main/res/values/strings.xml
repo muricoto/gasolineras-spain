@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Gasolineras España</string>
-    <string name="title_activity_main">Gasolineras España</string>
+    <string name="app_name">Mi Gasolinera - Gasolineras baratas</string>
+    <string name="title_activity_main">Mi Gasolinera - Gasolineras baratas</string>
     <string name="package_name">es.fuel.spainFuel</string>
     <string name="custom_url_scheme">es.fuel.spainFuel</string>
 </resources>

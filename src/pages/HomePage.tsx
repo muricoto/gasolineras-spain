@@ -1,19 +1,19 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CheapestSection } from '../components/CheapestSection';
 import { FilterPanel } from '../components/FilterPanel';
+import { ViewSwitch } from '../components/ViewSwitch';
 import { Header } from '../components/Header';
 import { MapErrorBoundary } from '../components/MapErrorBoundary';
 import { MarketStrip } from '../components/MarketStrip';
 import { StationDetail } from '../components/StationDetail';
 import { StationList } from '../components/StationList';
 import { StationListSkeleton, EmptyState, ErrorState } from '../components/States';
-import { StatusBar } from '../components/StatusBar';
 import { useFuelStations } from '../hooks/useFuelStations';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useStationFilters } from '../hooks/useStationFilters';
-import type { Place } from '../hooks/useStationFilters';
-import type { FuelStation } from '../types/fuel';
-import { normalizeSearchText } from '../utils/format';
+import type { FavoriteSearch, Place } from '../hooks/useStationFilters';
+import type { FuelStation, StationFilters } from '../types/fuel';
+import { formatDistance, nearestMunicipality } from '../utils/geo';
+import { formatPlaceName } from '../utils/format';
 
 const StationMap = lazy(() =>
   import('../components/StationMap').then((m) => ({ default: m.StationMap })),
@@ -54,10 +54,10 @@ function viewFromUrl(): 'list' | 'map' {
 
 /** Página principal: listado/buscador de gasolineras. */
 export function HomePage({ theme, onToggleTheme }: Props) {
-  const { stations, updatedAt, stale, isLoading, isFetching, isError, error, refetch } =
+  const { stations, updatedAt, isLoading, isFetching, isError, error, refetch, dataUpdatedAt } =
     useFuelStations();
   const geo = useGeolocation();
-  const { filters, patch, reset, newSearch, facets, filtered, debouncedQuery, favorites, saveFavorite, applyFavorite, deleteFavorite } =
+  const { filters, patch, reset, facets, filtered, debouncedQuery, favorites, saveFavorite, applyFavorite, deleteFavorite } =
     useStationFilters(stations, geo.location);
 
   const [view, setView] = useState<'list' | 'map'>(viewFromUrl);
@@ -76,19 +76,48 @@ export function HomePage({ theme, onToggleTheme }: Props) {
     }
   }, []);
 
-  // Elegir una localidad en el buscador: fija municipio + provincia + CCAA
-  // y muestra su nombre en la caja (filtro exacto y texto coinciden).
+  // Elegir una localidad en el buscador: suelta la ubicación (pasa a ser
+  // búsqueda manual), fija municipio + provincia + CCAA, muestra su nombre
+  // en la caja y baja hasta el interruptor Lista/Mapa.
   const pickPlace = useCallback((p: Place) => {
+    geo.clear();
     patch({ municipality: p.name, provinceId: p.provinceId, ccaaId: p.ccaaId, query: p.name });
+    try {
+      document.getElementById('vista')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch {
+      /* noop */
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Al conceder la ubicación: resetea la búsqueda anterior. El orden se
-  // mantiene siempre de menor a mayor (las cercanas se acotan con el radio).
-  // Solo una vez por concesión.
+  // Aviso por consola (sin ruido visual) cada vez que llegan datos nuevos.
+  const loggedDataAt = useRef(0);
+  useEffect(() => {
+    if (dataUpdatedAt && dataUpdatedAt !== loggedDataAt.current && stations.length > 0) {
+      loggedDataAt.current = dataUpdatedAt;
+      console.log(
+        `[fuel] precios actualizados: ${stations.length.toLocaleString('es-ES')} estaciones (${updatedAt ?? 'sin fecha'})`,
+      );
+    }
+  }, [dataUpdatedAt, stations.length, updatedAt]);
+
+  // Al conceder la ubicación: resetea la búsqueda anterior, centra los
+  // filtros en tu municipio (lista y mapa muestran tu ciudad) y baja hasta
+  // los botones Lista/Mapa (igual que al elegir localidad). Solo una vez.
   const prevGeoStatus = useRef(geo.status);
   useEffect(() => {
-    if (geo.status === 'granted' && prevGeoStatus.current !== 'granted') {
+    if (geo.status === 'granted' && prevGeoStatus.current !== 'granted' && geo.location) {
       reset();
+      const n = stations.length > 0
+        ? nearestMunicipality(stations, geo.location.latitude, geo.location.longitude)
+        : null;
+      if (n) {
+        patch({ municipality: n.municipality, provinceId: n.provinceId, ccaaId: n.ccaaId });
+      }
+      try {
+        document.getElementById('vista')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch {
+        /* noop */
+      }
     }
     prevGeoStatus.current = geo.status;
   }, [geo.status]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -110,6 +139,18 @@ export function HomePage({ theme, onToggleTheme }: Props) {
     setStationIdInUrl(null);
   }, []);
 
+  // "Ver en mapa" desde la ficha: cierra, cambia a mapa y centra la estación.
+  // El foco se consume una sola vez (FocusPoint lo limpia tras aplicarlo).
+  const [mapFocus, setMapFocus] = useState<{ latitude: number; longitude: number; key: number } | null>(null);
+  const clearMapFocus = useCallback(() => setMapFocus(null), []);
+  const showOnMap = useCallback((s: FuelStation) => {
+    closeStation();
+    changeView('map');
+    if (s.hasCoords) {
+      setMapFocus({ latitude: s.latitude, longitude: s.longitude, key: Date.now() });
+    }
+  }, [closeStation, changeView]);
+
   // Deep-link ?station=ID: abre el detalle cuando llegan los datos.
   useEffect(() => {
     if (selected || stations.length === 0) return;
@@ -127,24 +168,48 @@ export function HomePage({ theme, onToggleTheme }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.sort]);
 
+  // Cambios manuales de territorio desde el panel o favoritas: sueltan la
+  // ubicación (combustible, orden, precio y radio son refinados y la conservan).
+  const clearLocation = geo.clear;
+  const manualPatch = (p: Partial<StationFilters>) => {
+    if (p.ccaaId !== undefined || p.provinceId !== undefined || p.municipality !== undefined) {
+      clearLocation();
+    }
+    patch(p);
+  };
+  const manualApplyFavorite = (fav: FavoriteSearch) => {
+    clearLocation();
+    applyFavorite(fav);
+  };
+
   const fitKey = useMemo(
     () => `${filters.ccaaId}|${filters.provinceId}|${filters.municipality}|${filters.radiusKm ?? ''}`,
     [filters.ccaaId, filters.provinceId, filters.municipality, filters.radiusKm],
   );
 
+  // Dónde se está buscando: con ubicación, municipio de la estación más
+  // cercana ("Estás en: …"); con búsqueda manual, la localidad fijada.
+  const locationLabel = useMemo(() => {
+    if (geo.location && stations.length > 0) {
+      const n = nearestMunicipality(stations, geo.location.latitude, geo.location.longitude);
+      if (n) {
+        return `Estás en: ${formatPlaceName(n.municipality)} (${formatPlaceName(n.province)}) · la más cercana a ${formatDistance(n.distanceKm)}`;
+      }
+      return 'Ubicación activada';
+    }
+    if (filters.municipality) {
+      const prov = facets.provinces.find((p) => p.id === filters.provinceId);
+      return `Buscando en: ${formatPlaceName(filters.municipality)}${prov ? ` (${formatPlaceName(prov.name)})` : ''}`;
+    }
+    return null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geo.location, stations, filters.municipality, filters.provinceId]);
+
   return (
     <>
       <Header
         query={filters.query}
-        onQuery={(q) => {
-          // Búsqueda nueva (de vacío a texto): resetea todos los filtros
-          // salvo el combustible. Si se edita el texto tras fijar una
-          // localidad y ya no coincide, se suelta el candado exacto.
-          if (!filters.query && q) newSearch(q);
-          else if (filters.municipality && normalizeSearchText(q) !== normalizeSearchText(filters.municipality)) {
-            patch({ query: q, municipality: '' });
-          } else patch({ query: q });
-        }}
+        onClearText={() => patch({ query: '' })}
         places={facets.places}
         onPickPlace={pickPlace}
         locationStatus={geo.status}
@@ -156,14 +221,6 @@ export function HomePage({ theme, onToggleTheme }: Props) {
       />
 
       <main className="container">
-        <StatusBar
-          updatedAt={updatedAt}
-          count={stations.length}
-          stale={stale}
-          isFetching={isFetching}
-          onRefresh={() => refetch()}
-        />
-
         {geo.error && !geo.location && (
           <p className="geo-error" role="status">
             {geo.error}
@@ -186,37 +243,36 @@ export function HomePage({ theme, onToggleTheme }: Props) {
           />
         ) : (
           <>
-            <MarketStrip stations={stations} fuel={filters.fuel} />
-
-            {view === 'list' && (
-              <CheapestSection
-                stations={filtered}
-                fuel={filters.fuel}
-                location={geo.location}
-                onSelect={openStation}
-              />
-            )}
+            <MarketStrip stations={stations} fuel={filters.fuel} onFuel={(f) => patch({ fuel: f })} />
 
             <FilterPanel
               filters={filters}
-              patch={patch}
+              patch={manualPatch}
               facets={facets}
               location={geo.location}
-              view={view}
-              onView={changeView}
               resultCount={filtered.length}
               pendingQuery={filters.query !== debouncedQuery}
               onReset={reset}
               favorites={favorites}
               onSaveFavorite={saveFavorite}
-              onApplyFavorite={applyFavorite}
+              onApplyFavorite={manualApplyFavorite}
               onDeleteFavorite={deleteFavorite}
             />
+
+            {locationLabel && (
+              <p className="geo-place" role="status">
+                <span aria-hidden="true">{geo.location ? '📍' : '🔍'} </span>
+                {locationLabel}
+              </p>
+            )}
+            <ViewSwitch view={view} onView={changeView} />
 
             {filtered.length === 0 ? (
               <EmptyState onReset={reset} />
             ) : view === 'list' ? (
-              <StationList stations={filtered} fuel={filters.fuel} onSelect={openStation} />
+              <div id="listado">
+                <StationList stations={filtered} fuel={filters.fuel} onSelect={openStation} />
+              </div>
             ) : (
               <MapErrorBoundary>
                 <Suspense fallback={<StationListSkeleton count={3} />}>
@@ -225,6 +281,8 @@ export function HomePage({ theme, onToggleTheme }: Props) {
                     fuel={filters.fuel}
                     fitKey={fitKey}
                     center={geo.location}
+                    focus={mapFocus}
+                    clearFocus={clearMapFocus}
                     onSelect={openStation}
                   />
                 </Suspense>
@@ -248,7 +306,12 @@ export function HomePage({ theme, onToggleTheme }: Props) {
         </footer>
       </main>
 
-      <StationDetail station={selected} location={geo.location} onClose={closeStation} />
+      <StationDetail
+        station={selected}
+        location={geo.location}
+        onClose={closeStation}
+        onShowOnMap={view === 'map' ? undefined : showOnMap}
+      />
     </>
   );
 }

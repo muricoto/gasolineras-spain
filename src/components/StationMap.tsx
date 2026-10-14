@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, Marker, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, Marker, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import Supercluster from 'supercluster';
-import { getFuelLabel } from '../data/fuels';
 import type { FuelKey, FuelStation } from '../types/fuel';
-import { formatPrice, formatPriceShort } from '../utils/format';
+import { formatPriceShort, priceTone } from '../utils/format';
 
 const MAX_MARKERS = 4000;
 
@@ -25,8 +24,17 @@ function dotIcon(): L.DivIcon {
   });
 }
 
-function clusterIcon(count: number): L.DivIcon {
-  const size = count > 500 ? 52 : count > 100 ? 44 : 36;
+/** Pin "estás aquí": gota azul con centro blanco. */
+function userIcon(): L.DivIcon {
+  return L.divIcon({
+    className: 'mk-wrap',
+    html: '<span class="mk-user"></span>',
+    iconSize: [26, 26],
+    iconAnchor: [13, 24],
+  });
+}
+
+function clusterIcon(count: number): L.DivIcon {  const size = count > 500 ? 52 : count > 100 ? 44 : 36;
   return L.divIcon({
     className: 'mk-wrap',
     html: `<span class="mk-cluster" style="width:${size}px;height:${size}px">${count > 999 ? `${Math.round(count / 100) / 10}k` : count}</span>`,
@@ -36,16 +44,91 @@ function clusterIcon(count: number): L.DivIcon {
   });
 }
 
-function FitBounds({ fitKey, points }: { fitKey: string; points: MapPoint[] }) {
+function FitBounds({ fitSignal, points, focusKey }: { fitSignal: string; points: MapPoint[]; focusKey: number | null }) {
   const map = useMap();
-  const firstKey = useMemo(() => fitKey, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const prev = useRef<string | null>(null);
   useEffect(() => {
-    if (fitKey === firstKey) return; // no reencuadrar en el primer montaje
+    // Encuadra al montar la vista y cuando cambia el territorio/búsqueda.
+    // Los refrescos de datos no tocan la señal, así no se pierde la posición.
+    // Si hay un foco ("Ver en mapa"), manda FocusPoint y aquí no se toca nada.
+    if (prev.current === fitSignal) return;
+    prev.current = fitSignal;
     if (points.length === 0) return;
+    if (focusKey !== null) return;
     const bounds = L.latLngBounds(points.map((p) => [p.geometry.coordinates[1], p.geometry.coordinates[0]] as [number, number]));
     map.fitBounds(bounds.pad(0.1), { animate: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fitKey]);
+  }, [fitSignal, points, map, focusKey]);
+  return null;
+}
+
+function FocusPoint({ focus, clearFocus }: {
+  focus: { latitude: number; longitude: number; key: number } | null;
+  clearFocus: () => void;
+}) {  const map = useMap();
+  const prevKey = useRef<number | null>(null);
+  useEffect(() => {
+    if (!focus || prevKey.current === focus.key) return;
+    prevKey.current = focus.key;
+    map.setView([focus.latitude, focus.longitude], 15, { animate: true });
+    clearFocus();
+  }, [focus, map, clearFocus]);
+  return null;
+}
+
+/** Punto azul "estás aquí" en un panel propio por encima de marcadores,
+ * clusters y etiquetas de precio: nunca queda tapado. El panel se crea
+ * antes de montar el marcador (Leaflet falla si el panel no existe). */
+function UserMarker({ center }: { center: { latitude: number; longitude: number } }) {  const map = useMap();
+  const [ready, setReady] = useState(() => map.getPane('userPane') !== undefined);
+  useEffect(() => {
+    if (!map.getPane('userPane')) {
+      const pane = map.createPane('userPane');
+      pane.style.zIndex = '680';
+      pane.style.pointerEvents = 'none';
+    }
+    setReady(true);
+  }, [map]);
+  if (!ready) return null;
+  return (
+    <Marker
+      position={[center.latitude, center.longitude]}
+      icon={userIcon()}
+      pane="userPane"
+      interactive={false}
+      keyboard={false}
+      title="Estás aquí"
+    />
+  );
+}
+
+/**
+ * Botón "ir a mi ubicación" sobre el mapa (arriba a la derecha, como el de
+ * Google Maps). Solo visible con ubicación activa: centra el mapa en tu
+ * posición exacta si te has desplazado mirando otras zonas.
+ */
+function RecenterControl({ center }: { center: { latitude: number; longitude: number } }) {
+  const map = useMap();
+  useEffect(() => {
+    const ctrl = new L.Control({ position: 'topright' });
+    ctrl.onAdd = () => {
+      const btn = L.DomUtil.create('button', 'map-recenter') as HTMLButtonElement;
+      btn.type = 'button';
+      btn.title = 'Ir a mi ubicación';
+      btn.setAttribute('aria-label', 'Centrar el mapa en mi ubicación');
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="1.5" fill="currentColor" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke-linecap="round" /></svg>';
+      L.DomEvent.on(btn, 'click', (e) => {
+        L.DomEvent.stopPropagation(e);
+        L.DomEvent.preventDefault(e);
+        map.setView([center.latitude, center.longitude], 14, { animate: true });
+      });
+      return btn;
+    };
+    ctrl.addTo(map);
+    return () => {
+      ctrl.remove();
+    };
+  }, [map, center]);
   return null;
 }
 
@@ -80,7 +163,7 @@ function ClusterLayer({
   }, [map]);
 
   const index = useMemo(() => {
-    const sc = new Supercluster({ radius: 70, maxZoom: 15, minPoints: 2 });
+    const sc = new Supercluster({ radius: 60, maxZoom: 14, minPoints: 2 });
     sc.load(points as never);
     return sc;
   }, [points]);
@@ -93,20 +176,26 @@ function ClusterLayer({
     }
   }, [index, bbox, zoom]);
 
-  // Mínimo y máximo del combustible activo por municipio: la más barata de
-  // cada ciudad va en verde y la más cara en rojo (si hay diferencia).
-  const cityRange = useMemo(() => {
-    const m = new Map<string, { min: number; max: number }>();
+  // Etiquetas de precio: a partir de zoom 9 y con tope de puntos sueltos
+  // para no petar el DOM cuando se ven cientos a la vez.
+  let singles = 0;
+  for (const c of clusters) {
+    if (!(c.properties as { cluster?: boolean }).cluster) singles++;
+  }
+  const showPrices = zoom >= 9 && singles <= 500;
+
+  // Precios del combustible activo por municipio, ordenados: la más barata
+  // de cada ciudad va en verde y el 10 % más caro en rojo.
+  const cityPrices = useMemo(() => {
+    const m = new Map<string, number[]>();
     for (const s of byId.values()) {
       const p = s.prices[fuel];
       if (p === undefined || !s.municipality) continue;
-      const e = m.get(s.municipality);
-      if (!e) m.set(s.municipality, { min: p, max: p });
-      else {
-        if (p < e.min) e.min = p;
-        if (p > e.max) e.max = p;
-      }
+      const arr = m.get(s.municipality);
+      if (arr) arr.push(p);
+      else m.set(s.municipality, [p]);
     }
+    for (const arr of m.values()) arr.sort((a, b) => a - b);
     return m;
   }, [byId, fuel]);
 
@@ -133,45 +222,29 @@ function ClusterLayer({
         const station = props.stationId ? byId.get(props.stationId) : undefined;
         if (!station) return null;
         const price = station.prices[fuel];
-        const range = station.municipality ? cityRange.get(station.municipality) : undefined;
-        const tone =
-          price !== undefined && range && range.max > range.min
-            ? price <= range.min
-              ? 'mk-cheap'
-              : price >= range.max
-                ? 'mk-dear'
-                : ''
-            : '';
+        const tone = priceTone(price, cityPrices.get(station.municipality) ?? []);
         return (
-          <Marker key={station.id} position={[lat, lng]} icon={dotIcon()}>
-            {price !== undefined && (
+          <Marker
+            key={station.id}
+            position={[lat, lng]}
+            icon={dotIcon()}
+            eventHandlers={{ click: () => onSelect(station) }}
+          >
+            {showPrices && price !== undefined && (
               <Tooltip
                 permanent
                 direction="top"
                 offset={[0, -12]}
                 opacity={1}
-                interactive={false}
-                className={`mk-price ${tone}`}
+                interactive
+                className={tone ? `mk-price mk-${tone}` : 'mk-price'}
               >
-                <span className="mk-name">{station.name}</span>
-                <span className="mk-num">{formatPriceShort(price)}</span>
+                <span className="mk-label" onClick={() => onSelect(station)}>
+                  <span className="mk-name">{station.name}</span>
+                  <span className="mk-num">{formatPriceShort(price)}</span>
+                </span>
               </Tooltip>
             )}
-            <Popup>
-              <div className="popup">
-                <strong className="popup-name">{station.name}</strong>
-                <p className="popup-place">
-                  {station.municipality}
-                  {station.province ? `, ${station.province}` : ''}
-                </p>
-                <p className="popup-price">
-                  {getFuelLabel(fuel)} · <strong>{formatPrice(station.prices[fuel])}</strong>
-                </p>
-                <button type="button" className="btn btn-primary btn-sm" onClick={() => onSelect(station)}>
-                  Ver estación
-                </button>
-              </div>
-            </Popup>
           </Marker>
         );
       })}
@@ -184,6 +257,8 @@ interface Props {
   fuel: FuelKey;
   fitKey: string;
   center: { latitude: number; longitude: number } | null;
+  focus: { latitude: number; longitude: number; key: number } | null;
+  clearFocus: () => void;
   onSelect: (station: FuelStation) => void;
 }
 
@@ -192,7 +267,7 @@ interface Props {
  * supercluster para no crear miles de marcadores DOM a la vez; además se
  * limita el número de estaciones pintadas con aviso visible.
  */
-export function StationMap({ stations, fuel, fitKey, center, onSelect }: Props) {
+export function StationMap({ stations, fuel, fitKey, center, focus, clearFocus, onSelect }: Props) {
   const withCoords = useMemo(() => stations.filter((s) => s.hasCoords), [stations]);
   const capped = withCoords.length > MAX_MARKERS;
   const shown = useMemo(() => (capped ? withCoords.slice(0, MAX_MARKERS) : withCoords), [withCoords, capped]);
@@ -215,6 +290,10 @@ export function StationMap({ stations, fuel, fitKey, center, onSelect }: Props) 
     : [40.3, -3.7];
   const initialZoom = center ? 10 : 6;
 
+  // Cambia al filtrar/buscar y al pasar de vacío a con datos: entrar al mapa
+  // o cambiar filtros reencuadra; los refrescos periódicos, no.
+  const fitSignal = `${fitKey}|${points.length > 0}`;
+
   return (
     <div className="map-wrap">
       {capped && (
@@ -234,8 +313,11 @@ export function StationMap({ stations, fuel, fitKey, center, onSelect }: Props) 
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <FitBounds fitKey={fitKey} points={points} />
+        <FitBounds fitSignal={fitSignal} points={points} focusKey={focus?.key ?? null} />
         <ClusterLayer points={points} byId={byId} fuel={fuel} onSelect={onSelect} />
+        {center && <UserMarker center={center} />}
+        {center && <RecenterControl center={center} />}
+        <FocusPoint focus={focus} clearFocus={clearFocus} />
       </MapContainer>
     </div>
   );

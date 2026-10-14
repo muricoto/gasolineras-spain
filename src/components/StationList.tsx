@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FuelKey, FuelStation } from '../types/fuel';
+import { priceTone } from '../utils/format';
 import { StationCard } from './StationCard';
 
-const PAGE_SIZE = 48;
+const PAGE_SIZE = 15;
 
 interface Props {
   stations: FuelStation[];
@@ -10,61 +11,82 @@ interface Props {
   onSelect: (station: FuelStation) => void;
 }
 
+function scrollToList() {
+  try {
+    document.getElementById('listado')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch {
+    /* noop */
+  }
+}
+
 /**
- * Listado con carga progresiva: solo renderiza la página visible y añade
- * más al hacer scroll (IntersectionObserver) o con el botón "Mostrar más".
- * Nunca monta miles de tarjetas a la vez.
+ * Listado paginado (15 por página): nunca monta cientos de tarjetas a la vez
+ * y la página siempre cabe de una ojeada. La página vuelve al inicio cuando
+ * cambia el resultado.
  */
 export function StationList({ stations, fuel, onSelect }: Props) {
-  const [visible, setVisible] = useState(PAGE_SIZE);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
-    setVisible(PAGE_SIZE);
+    setPage(0);
   }, [stations]);
 
-  const shown = useMemo(() => stations.slice(0, visible), [stations, visible]);
-  const hasMore = visible < stations.length;
+  const pageCount = Math.max(1, Math.ceil(stations.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const shown = useMemo(
+    () => stations.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE),
+    [stations, safePage],
+  );
 
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el || !hasMore) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisible((v) => Math.min(v + PAGE_SIZE, stations.length));
-        }
-      },
-      { rootMargin: '600px' },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [hasMore, stations.length]);
+  // Rango del combustible activo por municipio (mismo semáforo que el mapa).
+  const cityPrices = useMemo(() => {
+    const m = new Map<string, number[]>();
+    for (const s of stations) {
+      const p = s.prices[fuel];
+      if (p === undefined || !s.municipality) continue;
+      const arr = m.get(s.municipality);
+      if (arr) arr.push(p);
+      else m.set(s.municipality, [p]);
+    }
+    for (const arr of m.values()) arr.sort((a, b) => a - b);
+    return m;
+  }, [stations, fuel]);
+
+  const goTo = (p: number) => {
+    setPage(Math.max(0, Math.min(p, pageCount - 1)));
+    scrollToList();
+  };
 
   return (
     <>
       <div className="grid">
-        {shown.map((s) => (
-          <StationCard key={s.id} station={s} fuel={fuel} onSelect={onSelect} />
-        ))}
+        {shown.map((s) => {
+          const tone = priceTone(s.prices[fuel], cityPrices.get(s.municipality) ?? []);
+          return <StationCard key={s.id} station={s} fuel={fuel} onSelect={onSelect} tone={tone} />;
+        })}
       </div>
-      {hasMore && (
-        <>
-          <div ref={sentinelRef} aria-hidden="true" />
-          <div className="load-more">
-            <p className="load-more-text">
-              Mostrando {shown.length.toLocaleString('es-ES')} de{' '}
-              {stations.length.toLocaleString('es-ES')}
-            </p>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setVisible((v) => Math.min(v + PAGE_SIZE * 2, stations.length))}
-            >
-              Mostrar más
-            </button>
-          </div>
-        </>
+      {pageCount > 1 && (
+        <nav className="pager" aria-label="Páginas de resultados">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => goTo(safePage - 1)}
+            disabled={safePage === 0}
+          >
+            ← Anterior
+          </button>
+          <p className="pager-info" role="status">
+            Página <strong>{safePage + 1}</strong> de {pageCount.toLocaleString('es-ES')}
+          </p>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => goTo(safePage + 1)}
+            disabled={safePage >= pageCount - 1}
+          >
+            Siguiente →
+          </button>
+        </nav>
       )}
     </>
   );

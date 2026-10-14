@@ -7,8 +7,6 @@ interface Props {
   patch: (p: Partial<StationFilters>) => void;
   facets: Facets;
   location: UserLocation | null;
-  view: 'list' | 'map';
-  onView: (v: 'list' | 'map') => void;
   resultCount: number;
   /** true mientras el texto escrito aún no se ha aplicado (debounce). */
   pendingQuery: boolean;
@@ -30,7 +28,7 @@ const RADIUS_OPTIONS: Array<{ value: number | null; label: string }> = [
 const MAX_PRICE_CAP = 3.0;
 
 /** Panel de filtros: combustible, territorio, precio, distancia y orden. */
-export function FilterPanel({ filters, patch, facets, location, view, onView, resultCount, pendingQuery, onReset, favorites, onSaveFavorite, onApplyFavorite, onDeleteFavorite }: Props) {
+export function FilterPanel({ filters, patch, facets, location, resultCount, pendingQuery, onReset, favorites, onSaveFavorite, onApplyFavorite, onDeleteFavorite }: Props) {
   const provinces = facets.provinces.filter(
     (p) => !filters.ccaaId || p.ccaaId === filters.ccaaId,
   );
@@ -57,7 +55,7 @@ export function FilterPanel({ filters, patch, facets, location, view, onView, re
   };
 
   return (
-    <section className="filters" aria-label="Filtros de búsqueda">
+    <section className="filters" id="filtros" aria-label="Filtros de búsqueda">
       <div className="fuel-chips" role="group" aria-label="Tipo de combustible">
         {MAIN_FUELS.map((key) => (
           <button
@@ -99,7 +97,7 @@ export function FilterPanel({ filters, patch, facets, location, view, onView, re
           <select
             id="f-ccaa"
             value={filters.ccaaId}
-            onChange={(e) => patch({ ccaaId: e.target.value })}
+            onChange={(e) => patch({ ccaaId: e.target.value, query: '' })}
           >
             <option value="">Todas</option>
             {facets.ccaas.map((c) => (
@@ -115,7 +113,7 @@ export function FilterPanel({ filters, patch, facets, location, view, onView, re
           <select
             id="f-prov"
             value={filters.provinceId}
-            onChange={(e) => patch({ provinceId: e.target.value })}
+            onChange={(e) => patch({ provinceId: e.target.value, query: '' })}
           >
             <option value="">Todas</option>
             {provinces.map((p) => (
@@ -186,30 +184,6 @@ export function FilterPanel({ filters, patch, facets, location, view, onView, re
       </div>
 
       <div className="filters-foot">
-        <div className="view-toggle" role="group" aria-label="Vista de resultados">
-          <button
-            type="button"
-            className={view === 'list' ? 'active' : ''}
-            onClick={() => onView('list')}
-            aria-pressed={view === 'list'}
-          >
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
-            </svg>
-            Lista
-          </button>
-          <button
-            type="button"
-            className={view === 'map' ? 'active' : ''}
-            onClick={() => onView('map')}
-            aria-pressed={view === 'map'}
-          >
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2ZM9 4v14M15 6v14" strokeLinejoin="round" />
-            </svg>
-            Mapa
-          </button>
-        </div>
         <p className="result-count" role="status">
           {pendingQuery ? (
             'Buscando…'

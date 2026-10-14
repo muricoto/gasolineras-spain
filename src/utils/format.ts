@@ -30,6 +30,42 @@ export function normalizeSearchText(s: string): string {
   return s.toLowerCase().normalize('NFD').replace(/[^a-z0-9\s]/g, '');
 }
 
+/** Conectores que van en minúscula dentro de un topónimo. */
+const LOWERCASE_WORDS = new Set(['de', 'del', 'la', 'las', 'el', 'los', 'y', 'en', 'al']);
+
+/**
+ * "HUMANES DE MADRID" → "Humanes de Madrid" (los datos MITECO vienen en
+ * mayúsculas). Primera palabra siempre en mayúscula.
+ */
+export function formatPlaceName(s: string): string {
+  return s
+    .toLowerCase()
+    .split(/(\s+|[-'])/)
+    .map((w, i) => {
+      if (!w || w === '-' || w === "'" || /^\s+$/.test(w)) return w;
+      if (i > 0 && LOWERCASE_WORDS.has(w)) return w;
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    })
+    .join('');
+}
+
+export type PriceTone = '' | 'cheap' | 'mid' | 'dear';
+/**
+ * Semáforo de precio dentro de su ciudad (lista ordenada ascendente):
+ * 'cheap' si es el mínimo, 'dear' si está entre el 10 % más caro,
+ * 'mid' en medio. Sin diferencia, neutro ('').
+ */
+export function priceTone(price: number | undefined, sorted: number[]): PriceTone {
+  if (price === undefined || sorted.length === 0) return '';
+  const min = sorted[0];
+  const max = sorted[sorted.length - 1];
+  if (!(max > min)) return '';
+  if (price <= min) return 'cheap';
+  const redCount = Math.max(1, Math.ceil(sorted.length / 10));
+  if (price >= sorted[sorted.length - redCount]) return 'dear';
+  return 'mid';
+}
+
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   day: 'numeric',
   month: 'short',

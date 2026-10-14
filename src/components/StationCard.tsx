@@ -2,7 +2,7 @@ import { memo } from 'react';
 import type { FuelKey, FuelStation } from '../types/fuel';
 import { getFuelLabel } from '../data/fuels';
 import { formatDistance } from '../utils/geo';
-import { formatPrice, formatRelativeTime } from '../utils/format';
+import { formatPrice, formatRelativeTime, type PriceTone } from '../utils/format';
 import { isOpenNow } from '../utils/schedule';
 
 interface Props {
@@ -10,6 +10,8 @@ interface Props {
   fuel: FuelKey;
   onSelect: (station: FuelStation) => void;
   rank?: number;
+  /** Semáforo del precio principal (verde/naranja/rojo dentro de su ciudad). */
+  tone?: PriceTone;
 }
 
 /** Otros precios a mostrar junto al principal (los más relevantes primero). */
@@ -27,7 +29,7 @@ function OpenBadge({ schedule }: { schedule: string }) {
 }
 
 /** Tarjeta de gasolinera (memoizada: el listado renderiza cientos). */
-export const StationCard = memo(function StationCard({ station, fuel, onSelect, rank }: Props) {
+export const StationCard = memo(function StationCard({ station, fuel, onSelect, rank, tone }: Props) {
   const mainPrice = station.prices[fuel];
   const secondary = SECONDARY_ORDER.filter((k) => k !== fuel && station.prices[k] !== undefined).slice(0, 2);
 
@@ -53,7 +55,7 @@ export const StationCard = memo(function StationCard({ station, fuel, onSelect, 
       <div className="card-prices">
         <div className="price-main">
           <span className="price-fuel">{getFuelLabel(fuel)}</span>
-          <span className="price-value">{formatPrice(mainPrice)}</span>
+          <span className={`price-value${tone ? ` price-${tone}` : ''}`}>{formatPrice(mainPrice)}</span>
         </div>
         {secondary.map((k) => (
           <div className="price-row" key={k}>

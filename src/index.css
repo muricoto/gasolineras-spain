@@ -13,6 +13,9 @@
   --linea: #d9ded2;
   --surtidor: #2e7d5b;
   --surtidor-fondo: #dfeee4;
+  /* Verde reservado al semáforo de precios (barato): no se usa como acento. */
+  --barato: #2e7d5b;
+  --barato-fondo: #dfeee4;
   --senal: #dfa12d;
   --peligro: #b6544a;
   --peligro-fondo: #f9e9e5;
@@ -23,30 +26,35 @@
 }
 
 [data-theme="dark"] {
-  --papel: #101512;
-  --superficie: #182019;
-  --superficie-2: #202a24;
-  --tinta: #e6ede8;
-  --asfalto: #0c100e;
-  --asfalto-2: #141a16;
-  --humo: #9dab9f;
-  --linea: #2e3a32;
-  --surtidor: #57b47e;
-  --surtidor-fondo: #1a3327;
+  --papel: #1f2733;
+  --superficie: #28313d;
+  --superficie-2: #333e4c;
+  --tinta: #dbe4ee;
+  --asfalto: #1c232e;
+  --asfalto-2: #232c38;
+  --humo: #a7b3c2;
+  --linea: #3c4757;
+  --surtidor: #6ea8fe;
+  --surtidor-fondo: #1b2a47;
+  --barato: #4fc287;
+  --barato-fondo: #173b2c;
   --senal: #dfa12d;
   --peligro: #d98a80;
-  --peligro-fondo: #33211f;
-  --borde: 1.5px solid #33403a;
+  --peligro-fondo: #3c2623;
+  --borde: 1.5px solid #3c4757;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
 }
 
-html, body {
+html,
+body {
   overscroll-behavior-y: none;
   overflow-x: clip;
 }
@@ -62,17 +70,37 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-#root { min-height: 100vh; min-height: 100dvh; }
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
 
-a { color: var(--surtidor); }
-img, svg { display: block; max-width: 100%; }
-input, select, textarea { font-size: 16px; }
-button { touch-action: manipulation; }
+a {
+  color: var(--surtidor);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+button {
+  touch-action: manipulation;
+}
 
 .sr-only {
   position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
@@ -101,24 +129,53 @@ button { touch-action: manipulation; }
   transition: transform 0.08s ease, background 0.12s ease;
 }
 
-.btn:active { transform: translateY(1px); }
-.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn:active {
+  transform: translateY(1px);
+}
 
-.btn-primary { background: var(--surtidor); border-color: var(--surtidor); color: #fff; }
-[data-theme="dark"] .btn-primary { color: #10241a; }
-.btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 
-.btn-secondary { background: var(--superficie); color: var(--tinta); }
-.btn-secondary:hover:not(:disabled) { background: var(--superficie-2); }
+.btn-primary {
+  background: var(--surtidor);
+  border-color: var(--surtidor);
+  color: #fff;
+}
 
-.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
-.btn-block { width: 100%; }
+[data-theme="dark"] .btn-primary {
+  color: #0f1c33;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.btn-secondary {
+  background: var(--superficie);
+  color: var(--tinta);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--superficie-2);
+}
+
+.btn-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.btn-block {
+  width: 100%;
+}
 
 .icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px; height: 40px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radio-sm);
   border: 1.5px solid currentColor;
   background: transparent;
@@ -127,8 +184,15 @@ button { touch-action: manipulation; }
   font-size: 1rem;
 }
 
-.spin { animation: spin 0.9s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ============ Cabecera: banda de asfalto ============ */
 .header {
@@ -167,16 +231,16 @@ button { touch-action: manipulation; }
 }
 
 .brand-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px; height: 38px;
+  width: 38px;
+  height: 38px;
   border-radius: 9px;
-  background: var(--senal);
-  color: #2b2a20;
+  flex: none;
 }
 
-.brand-text strong { color: var(--senal); font-weight: 800; }
+.brand-text strong {
+  color: var(--senal);
+  font-weight: 800;
+}
 
 .search-wrap {
   position: relative;
@@ -204,12 +268,19 @@ button { touch-action: manipulation; }
   background: #151b18;
   color: #eef2ec;
 }
-[data-theme="dark"] .search { background: #0a0e0c; }
 
-.search::placeholder { color: #93a096; }
+[data-theme="dark"] .search {
+  background: #161d29;
+}
+
+.search::placeholder {
+  color: #93a096;
+}
 
 /* Evita la X nativa duplicada (ya hay botón propio .search-clear). */
-.search::-webkit-search-cancel-button { display: none; }
+.search::-webkit-search-cancel-button {
+  display: none;
+}
 
 .search:focus {
   outline: none;
@@ -240,8 +311,14 @@ button { touch-action: manipulation; }
   margin-left: auto;
 }
 
-.header-actions .icon-btn { border-color: #4d5852; color: #eef2ec; }
-.header-actions .icon-btn:hover { border-color: var(--senal); }
+.header-actions .icon-btn {
+  border-color: #4d5852;
+  color: #eef2ec;
+}
+
+.header-actions .icon-btn:hover {
+  border-color: var(--senal);
+}
 
 .btn-location {
   background: transparent;
@@ -250,7 +327,9 @@ button { touch-action: manipulation; }
   white-space: nowrap;
 }
 
-.btn-location:hover { border-color: var(--senal); }
+.btn-location:hover {
+  border-color: var(--senal);
+}
 
 .btn-location.active {
   background: var(--senal);
@@ -274,11 +353,38 @@ button { touch-action: manipulation; }
     padding-bottom: 0.55rem;
     min-height: 0;
   }
-  .brand { grid-area: brand; font-size: 1rem; gap: 0.45rem; min-width: 0; }
-  .brand-icon { width: 32px; height: 32px; border-radius: 8px; flex: none; }
-  .brand-text { overflow: hidden; text-overflow: ellipsis; min-width: 0; white-space: nowrap; }
-  .header-actions { grid-area: actions; gap: 0.4rem; margin-left: 0; }
-  .header-actions svg { flex: none; }
+
+  .brand {
+    grid-area: brand;
+    font-size: 1rem;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    flex: none;
+  }
+
+  .brand-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    grid-area: actions;
+    gap: 0.4rem;
+    margin-left: 0;
+  }
+
+  .header-actions svg {
+    flex: none;
+  }
+
   .search-wrap {
     grid-area: search;
     min-width: 0;
@@ -286,23 +392,55 @@ button { touch-action: manipulation; }
     max-width: none;
     margin: 0;
   }
-  .icon-btn { width: 44px; height: 44px; }
-  .btn { min-height: 44px; }
-  .chip { min-height: 44px; }
-  .field select { font-size: 16px; }
+
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .chip {
+    min-height: 44px;
+  }
+
+  .field select {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 480px) {
-  .btn-location .btn-label { display: none; }
-  .btn-location { padding: 0.5rem 0.65rem; }
+  .btn-location .btn-label {
+    display: none;
+  }
+
+  .btn-location {
+    padding: 0.5rem 0.65rem;
+  }
+
+  .brand-sub {
+    display: none;
+  }
 }
 
 /* En muy estrechas los selects van a 1 columna y las tablas del
    modal pueden partir línea en vez de comprimir el precio. */
 @media (max-width: 430px) {
-  .filter-grid { grid-template-columns: 1fr; }
-  .price-table-row, .info-row { gap: 0.25rem 1rem; flex-wrap: wrap; }
-  .info-row dd { text-align: left; }
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .price-table-row,
+  .info-row {
+    gap: 0.25rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  .info-row dd {
+    text-align: left;
+  }
 }
 
 /* ============ Contenedor ============ */
@@ -321,7 +459,8 @@ button { touch-action: manipulation; }
 
 /* ============ Tótem de precio medio ============ */
 .totem {
-  background: var(--superficie);
+  background: var(--asfalto);
+  color: #e7ece8;
   border: var(--borde);
   border-radius: var(--radio);
   border-top: 4px solid var(--surtidor);
@@ -334,7 +473,20 @@ button { touch-action: manipulation; }
   margin: 0;
   font-size: 0.92rem;
   font-weight: 600;
-  color: var(--humo);
+  color: #a7b3ab;
+}
+
+.totem-select {
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--senal);
+  background: transparent;
+  border: 1.5px solid #4d5852;
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  max-width: 100%;
 }
 
 .totem-price {
@@ -344,11 +496,18 @@ button { touch-action: manipulation; }
   letter-spacing: -0.03em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  color: #ffffff;
 }
 
-.totem-sub { margin: 0.3rem 0 0; color: var(--humo); font-size: 0.92rem; }
+.totem-sub {
+  margin: 0.3rem 0 0;
+  color: #a7b3ab;
+  font-size: 0.92rem;
+}
 
-.totem-range { align-self: end; }
+.totem-range {
+  align-self: end;
+}
 
 .totem-track {
   position: relative;
@@ -360,10 +519,11 @@ button { touch-action: manipulation; }
 .totem-marker {
   position: absolute;
   top: 50%;
-  width: 22px; height: 22px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: var(--superficie);
-  border: 3px solid var(--tinta);
+  background: #ffffff;
+  border: 3px solid var(--senal);
   transform: translate(-50%, -50%);
 }
 
@@ -372,51 +532,38 @@ button { touch-action: manipulation; }
   justify-content: space-between;
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--humo);
+  color: #a7b3ab;
   margin-top: 0.3rem;
   font-variant-numeric: tabular-nums;
 }
 
-/* ============ Barra de estado ============ */
-.statusbar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.6rem 1rem;
-  background: var(--superficie);
+/* ============ Barra de estado (solo errores de ubicación) ============ */
+.geo-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--peligro);
+  font-weight: 600;
+}
+
+/* Dónde se está buscando: ubicación ("Estás en: …") o localidad manual. */
+.geo-place {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  background: var(--surtidor-fondo);
+  color: var(--tinta);
   border: var(--borde);
-  border-left-width: 4px;
+  border-left: 4px solid var(--surtidor);
   border-radius: var(--radio-sm);
-  padding: 0.6rem 0.9rem;
-  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
 }
-
-.statusbar-info {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  flex: 1;
-  min-width: 200px;
-}
-
-.statusbar-sub { color: var(--humo); }
-
-.pulse {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: var(--surtidor);
-  flex: none;
-}
-
-.pulse-stale { background: var(--peligro); }
-
-.geo-error { margin: 0; font-size: 0.85rem; color: var(--peligro); font-weight: 600; }
 
 /* ============ Filtros ============ */
 .filters {
   background: var(--superficie);
   border: var(--borde);
   border-radius: var(--radio);
+  border-top: 4px solid var(--senal);
   padding: 0.9rem;
   display: flex;
   flex-direction: column;
@@ -442,15 +589,30 @@ button { touch-action: manipulation; }
   cursor: pointer;
 }
 
-.chip:hover { background: var(--superficie-2); }
+/* .chip:hover { background: var(--superficie-2); } */
 
-.chip-active { background: var(--tinta); color: var(--senal); }
-[data-theme="dark"] .chip-active { background: var(--senal); color: #2b2a20; }
+.chip-active {
+  background: var(--surtidor);
+  border-color: var(--surtidor);
+  color: #fff;
+}
 
-.chip-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
-.chip-static { cursor: default; }
+[data-theme="dark"] .chip-active {
+  color: #0f1c33;
+}
 
-.chip-select-wrap { display: inline-flex; }
+.chip-sm {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.chip-static {
+  cursor: default;
+}
+
+.chip-select-wrap {
+  display: inline-flex;
+}
 
 .chip-select {
   appearance: none;
@@ -466,14 +628,26 @@ button { touch-action: manipulation; }
   gap: 0.7rem;
 }
 
-.field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
-.field-price { grid-column: 1 / -1; }
-.field-radius { grid-column: 1 / -1; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
 
-.field label, .field legend {
+.field-price {
+  grid-column: 1 / -1;
+}
+
+.field-radius {
+  grid-column: 1 / -1;
+}
+
+.field label,
+.field legend {
   font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--humo);
+  font-weight: 700;
+  color: var(--tinta);
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -481,9 +655,16 @@ button { touch-action: manipulation; }
   padding: 0;
 }
 
-.field output { color: var(--surtidor); font-weight: 800; font-variant-numeric: tabular-nums; }
+.field output {
+  color: var(--surtidor);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
 
-fieldset.field { border: none; margin: 0; }
+fieldset.field {
+  border: none;
+  margin: 0;
+}
 
 .field select {
   font: inherit;
@@ -496,7 +677,14 @@ fieldset.field { border: none; margin: 0; }
   max-width: 100%;
 }
 
-.field select:disabled { opacity: 0.55; }
+.field select:disabled {
+  opacity: 0.55;
+}
+
+.field select:focus {
+  outline: none;
+  border-color: var(--senal);
+}
 
 /* ============ Sugerencias de localidades (cabecera) ============ */
 .combo-list {
@@ -532,10 +720,25 @@ fieldset.field { border: none; margin: 0; }
   cursor: pointer;
 }
 
-.combo-list button:hover { background: var(--superficie-2); }
-.combo-list button.active { background: var(--superficie-2); }
-.combo-list strong { font-weight: 600; text-transform: capitalize; }
-.combo-list span { color: var(--humo); font-size: 0.82rem; text-transform: capitalize; flex: none; }
+.combo-list button:hover {
+  background: var(--superficie-2);
+}
+
+.combo-list button.active {
+  background: var(--superficie-2);
+}
+
+.combo-list strong {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.combo-list span {
+  color: var(--humo);
+  font-size: 0.82rem;
+  text-transform: capitalize;
+  flex: none;
+}
 
 .field input[type="range"] {
   width: 100%;
@@ -543,7 +746,11 @@ fieldset.field { border: none; margin: 0; }
   height: 2rem;
 }
 
-.radio-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.radio-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
 
 .filters-foot {
   display: flex;
@@ -555,33 +762,51 @@ fieldset.field { border: none; margin: 0; }
   padding-top: 0.75rem;
 }
 
-.view-toggle {
-  display: inline-flex;
-  border: var(--borde);
-  border-radius: 999px;
-  padding: 3px;
-  background: var(--superficie);
+/* ============ Interruptor Lista/Mapa ============ */
+#vista {
+  scroll-margin-top: 150px;
 }
 
-.view-toggle button {
+.view-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  width: fit-content;
+  min-width: min(300px, 100%);
+  margin: 0 auto;
+  background: var(--asfalto);
+  border-radius: 11px;
+  padding: 3px;
+}
+
+.view-switch button {
   font: inherit;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 800;
   border: none;
   background: transparent;
-  color: var(--humo);
-  padding: 0.4rem 1.1rem;
-  border-radius: 999px;
+  color: #a7b3ab;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  min-height: 34px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
 }
 
-.view-toggle button.active { background: var(--tinta); color: var(--superficie); }
-[data-theme="dark"] .view-toggle button.active { background: var(--senal); color: #2b2a20; }
+.view-switch button.active {
+  background: var(--senal);
+  color: #2b2a20;
+}
 
-.result-count { margin: 0; font-size: 0.9rem; color: var(--humo); }
+.result-count {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--humo);
+}
+
 .result-count strong {
   display: inline-block;
   color: var(--tinta);
@@ -591,8 +816,15 @@ fieldset.field { border: none; margin: 0; }
 }
 
 @keyframes count-pop {
-  from { transform: scale(0.7); opacity: 0.4; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.7);
+    opacity: 0.4;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ============ Búsquedas favoritas ============ */
@@ -604,9 +836,18 @@ fieldset.field { border: none; margin: 0; }
   gap: 0.6rem;
 }
 
-.fav-title { margin: 0; font-size: 0.88rem; font-weight: 700; color: var(--humo); }
+.fav-title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--humo);
+}
 
-.fav-row { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.fav-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
 
 .fav {
   display: inline-flex;
@@ -641,62 +882,14 @@ fieldset.field { border: none; margin: 0; }
   line-height: 1;
 }
 
-.fav-del:hover { opacity: 1; background: var(--superficie-2); }
-
-.fav-save { align-self: flex-start; }
-
-/* ============ Las más baratas: rail oscuro ============ */
-.cheapest {
-  background: var(--asfalto);
-  color: #e7ece8;
-  border-radius: var(--radio);
-  border: var(--borde);
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
+.fav-del:hover {
+  opacity: 1;
+  background: var(--superficie-2);
 }
 
-.cheapest-title {
-  margin: 0;
-  font-size: 1.3rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.fav-save {
+  align-self: flex-start;
 }
-
-.cheapest-title svg { color: var(--senal); flex: none; }
-
-.cheapest-sub { margin: 0.15rem 0 0; color: #a7b3ab; font-size: 0.88rem; }
-
-.cheapest-row {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(250px, 310px);
-  gap: 0.75rem;
-  overflow-x: auto;
-  padding-bottom: 0.4rem;
-  scroll-snap-type: x mandatory;
-}
-
-.cheapest-row > * { scroll-snap-align: start; }
-
-/* Tickets oscuros dentro del rail */
-.cheapest .card {
-  background: var(--asfalto-2);
-  border-color: #3d4742;
-  color: #e7ece8;
-}
-[data-theme="dark"] .cheapest .card { border-color: #3d4742; }
-
-.cheapest .card-address, .cheapest .price-fuel, .cheapest .price-row { color: #a7b3ab; }
-.cheapest .card-place { color: #939f96; }
-.cheapest .price-value, .cheapest .price-row-value { color: var(--senal); }
-.cheapest .card-prices { border-top-color: #3d4742; }
-.cheapest .card-meta { color: #939f96; }
-.cheapest .rank { color: var(--senal); border-color: var(--senal); }
 
 /* ============ Tickets de estación ============ */
 .grid {
@@ -716,7 +909,9 @@ fieldset.field { border: none; margin: 0; }
   transition: transform 0.1s ease;
 }
 
-.card:hover { transform: translateY(-2px); }
+.card:hover {
+  transform: translateY(-2px);
+}
 
 .card-top {
   display: flex;
@@ -725,7 +920,12 @@ fieldset.field { border: none; margin: 0; }
   gap: 0.5rem;
 }
 
-.card-brand { display: flex; align-items: baseline; gap: 0.5rem; min-width: 0; }
+.card-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
 
 /* El puesto, como número grande de tótem */
 .rank {
@@ -764,15 +964,64 @@ fieldset.field { border: none; margin: 0; }
   border: 1.5px solid transparent;
 }
 
-.badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
 
-.badge-open { background: var(--surtidor-fondo); color: var(--surtidor); border-color: var(--surtidor); }
-.badge-closed { background: var(--peligro-fondo); color: var(--peligro); border-color: var(--peligro); }
-.badge-neutral { background: var(--superficie-2); color: var(--humo); border-color: var(--linea); }
-.cheapest .badge-neutral { background: transparent; border-color: #3d4742; color: #a7b3ab; }
+.badge-open {
+  background: var(--barato-fondo);
+  color: var(--barato);
+  border-color: var(--barato);
+}
 
-.card-address { margin: 0; font-size: 0.88rem; }
-.card-place { color: var(--humo); text-transform: capitalize; }
+.badge-closed {
+  background: var(--peligro-fondo);
+  color: var(--peligro);
+  border-color: var(--peligro);
+}
+
+.badge-neutral {
+  background: var(--superficie-2);
+  color: var(--humo);
+  border-color: var(--linea);
+}
+
+.cheapest .badge-neutral {
+  background: transparent;
+  border-color: #3d4742;
+  color: #a7b3ab;
+}
+
+.card-address {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.card-place {
+  color: var(--humo);
+  text-transform: capitalize;
+}
+
+/* Semáforo del precio principal en tarjetas (misma lógica que el mapa).
+   El verde barato es semántico y se mantiene también en oscuro. */
+.price-value.price-cheap {
+  color: var(--barato);
+}
+
+.price-value.price-mid {
+  color: #d97706;
+}
+
+.price-value.price-dear {
+  color: var(--peligro);
+}
+
+[data-theme="dark"] .price-value.price-mid {
+  color: #e09a3c;
+}
 
 /* Franja de precio separada por troquel, como un ticket */
 .card-prices {
@@ -790,7 +1039,11 @@ fieldset.field { border: none; margin: 0; }
   gap: 0.5rem;
 }
 
-.price-fuel { font-size: 0.85rem; font-weight: 600; color: var(--humo); }
+.price-fuel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--humo);
+}
 
 .price-value {
   font-size: 1.9rem;
@@ -808,10 +1061,24 @@ fieldset.field { border: none; margin: 0; }
   color: var(--humo);
 }
 
-.price-row-value { font-weight: 700; color: inherit; font-variant-numeric: tabular-nums; }
+.price-row-value {
+  font-weight: 700;
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
 
-.card-meta { font-size: 0.8rem; color: var(--humo); display: flex; gap: 0.3rem; flex-wrap: wrap; }
-.card-actions { margin-top: auto; padding-top: 0.3rem; }
+.card-meta {
+  font-size: 0.8rem;
+  color: var(--humo);
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.card-actions {
+  margin-top: auto;
+  padding-top: 0.3rem;
+}
 
 /* ============ Skeletons ============ */
 .sk {
@@ -823,19 +1090,49 @@ fieldset.field { border: none; margin: 0; }
 }
 
 @keyframes shimmer {
-  from { background-position: 200% 0; }
-  to { background-position: -200% 0; }
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
 }
 
-.sk-title { height: 20px; width: 55%; }
-.sk-line { height: 12px; width: 85%; }
-.sk-line.short { width: 55%; }
-.sk-price { height: 40px; }
-.sk-btn { height: 38px; }
-.sk-chips { height: 34px; }
-.sk-bar { height: 52px; margin-top: 0.6rem; }
+.sk-title {
+  height: 20px;
+  width: 55%;
+}
 
-.filters-skeleton { pointer-events: none; }
+.sk-line {
+  height: 12px;
+  width: 85%;
+}
+
+.sk-line.short {
+  width: 55%;
+}
+
+.sk-price {
+  height: 40px;
+}
+
+.sk-btn {
+  height: 38px;
+}
+
+.sk-chips {
+  height: 34px;
+}
+
+.sk-bar {
+  height: 52px;
+  margin-top: 0.6rem;
+}
+
+.filters-skeleton {
+  pointer-events: none;
+}
 
 /* ============ Estados ============ */
 .state {
@@ -850,16 +1147,70 @@ fieldset.field { border: none; margin: 0; }
   gap: 0.7rem;
 }
 
-.state-icon { color: var(--humo); }
-.state-icon-error { color: var(--peligro); }
-.state-title { margin: 0; font-size: 1.3rem; font-weight: 900; letter-spacing: -0.01em; }
-.state-text { margin: 0; color: var(--humo); max-width: 42ch; }
+.state-icon {
+  color: var(--humo);
+}
 
-.load-more { text-align: center; padding: 0.5rem 0 1rem; }
-.load-more-text { color: var(--humo); font-size: 0.88rem; margin: 0 0 0.6rem; }
+.state-icon-error {
+  color: var(--peligro);
+}
+
+.state-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.state-text {
+  margin: 0;
+  color: var(--humo);
+  max-width: 42ch;
+}
+
+.load-more {
+  text-align: center;
+  padding: 0.5rem 0 1rem;
+}
+
+.load-more-text {
+  color: var(--humo);
+  font-size: 0.88rem;
+  margin: 0 0 0.6rem;
+}
+
+/* Ancla del listado (scroll al elegir localidad o cambiar de página). */
+#listado {
+  scroll-margin-top: 150px;
+}
+
+/* ============ Paginador ============ */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0 1rem;
+  flex-wrap: wrap;
+}
+
+.pager-info {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--humo);
+}
+
+.pager-info strong {
+  color: var(--tinta);
+  font-variant-numeric: tabular-nums;
+}
 
 /* ============ Mapa ============ */
-.map-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
+.map-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 
 .map-notice {
   margin: 0;
@@ -869,6 +1220,35 @@ fieldset.field { border: none; margin: 0; }
   border-left: 4px solid var(--senal);
   border-radius: var(--radio-sm);
   padding: 0.5rem 0.75rem;
+}
+
+/* Botón "ir a mi ubicación" sobre el mapa (control Leaflet arriba-dcha). */
+.map-recenter {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  background-clip: padding-box;
+  border: 2px solid rgb(0 0 0 / 0.2);
+  border-radius: 4px;
+  color: #333;
+  cursor: pointer;
+}
+
+.map-recenter:hover {
+  background: #f4f4f4;
+}
+
+[data-theme="dark"] .map-recenter {
+  background: #28313d;
+  border-color: #3c4757;
+  color: #dbe4ee;
+}
+
+[data-theme="dark"] .map-recenter:hover {
+  background: #333e4c;
 }
 
 .map {
@@ -882,15 +1262,32 @@ fieldset.field { border: none; margin: 0; }
   touch-action: pan-x pan-y;
 }
 
-.mk-wrap { background: transparent; border: none; }
+.mk-wrap {
+  background: transparent;
+  border: none;
+}
 
 .mk-dot {
   display: block;
-  width: 16px; height: 16px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: var(--surtidor);
+  background: var(--barato);
   border: 3px solid #fff;
   box-shadow: 0 1px 5px rgb(0 0 0 / 0.4);
+}
+
+/* Pin "estás aquí": gota azul con centro blanco, inconfundible frente a
+   los puntos verdes de las estaciones. */
+.mk-user {
+  display: block;
+  width: 26px;
+  height: 26px;
+  background: radial-gradient(circle, #ffffff 0 5px, #2f7de1 5.5px);
+  border: 3px solid #ffffff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 7px rgb(0 0 0 / 0.45), 0 0 0 6px rgb(47 125 225 / 0.22);
 }
 
 .mk-cluster {
@@ -905,8 +1302,14 @@ fieldset.field { border: none; margin: 0; }
   border: 3px solid var(--senal);
 }
 
-.popup { font-family: var(--fuente); min-width: 170px; }
-.popup-name { font-size: 0.95rem; }
+.popup {
+  font-family: var(--fuente);
+  min-width: 170px;
+}
+
+.popup-name {
+  font-size: 0.95rem;
+}
 
 /* Etiqueta de precio sobre cada marcador individual (Tooltip permanente).
    Blanca siempre (también en oscuro) para distinguirla del cluster oscuro. */
@@ -922,10 +1325,15 @@ fieldset.field { border: none; margin: 0; }
   font-variant-numeric: tabular-nums;
   padding: 0.1rem 0.4rem;
   white-space: nowrap;
-  pointer-events: none;
+  text-align: center;
+  cursor: pointer;
 }
 
-.leaflet-tooltip.mk-price::before { display: none; }
+.leaflet-tooltip.mk-price::before {
+  display: none;
+}
+
+.mk-price .mk-label { display: block; }
 
 /* Nombre + precio dentro de la etiqueta; el número va en verde/rojo si es
    la más barata/cara de su municipio. */
@@ -949,10 +1357,25 @@ fieldset.field { border: none; margin: 0; }
   color: #d97706;
 }
 
-.mk-price.mk-cheap .mk-num { color: #18794e; }
-.mk-price.mk-dear .mk-num { color: #b3261e; }
-.popup-place { margin: 0.15rem 0; color: var(--humo); font-size: 0.82rem; text-transform: capitalize; }
-.popup-price { margin: 0.25rem 0 0.5rem; font-size: 0.88rem; }
+.mk-price.mk-cheap .mk-num {
+  color: #18794e;
+}
+
+.mk-price.mk-dear .mk-num {
+  color: #b3261e;
+}
+
+.popup-place {
+  margin: 0.15rem 0;
+  color: var(--humo);
+  font-size: 0.82rem;
+  text-transform: capitalize;
+}
+
+.popup-price {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.88rem;
+}
 
 /* ============ Modal ============ */
 .modal-overlay {
@@ -973,17 +1396,57 @@ fieldset.field { border: none; margin: 0; }
   max-width: 560px;
   max-height: 92vh;
   max-height: 92dvh;
-  overflow-y: auto;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   border-radius: 16px 16px 0 0;
   border: var(--borde);
   border-bottom: none;
-  padding: 1.2rem;
-  padding-bottom: max(1.2rem, env(safe-area-inset-bottom));
+  padding: 1.2rem 1.2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: max-height 0.18s ease;
+}
+
+.modal.dragging {
+  transition: none;
+}
+
+/* Zona con scroll: todo menos el pie de botones (que queda fuera y fijo). */
+.modal-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  padding: 0.2rem 0 0.8rem;
+}
+
+/* Tirador del bottom-sheet (solo móvil). */
+.sheet-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: 99px;
+  background: var(--linea);
+  margin: -0.4rem auto 0;
+  touch-action: none;
+  cursor: grab;
+  flex: none;
+}
+
+@media (min-width: 768px) {
+  .sheet-handle {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .modal {
+    max-height: 68dvh;
+  }
 }
 
 .modal-head {
@@ -1001,9 +1464,18 @@ fieldset.field { border: none; margin: 0; }
   text-transform: capitalize;
 }
 
-.modal-sub { margin: 0.25rem 0 0; color: var(--humo); font-size: 0.9rem; text-transform: capitalize; }
+.modal-sub {
+  margin: 0.25rem 0 0;
+  color: var(--humo);
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
 
-.modal-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.modal-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
 
 .modal-section {
   margin: 0.3rem 0 0;
@@ -1012,9 +1484,15 @@ fieldset.field { border: none; margin: 0; }
   color: var(--humo);
 }
 
-.price-table, .info-table { margin: 0; display: flex; flex-direction: column; }
+.price-table,
+.info-table {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
 
-.price-table-row, .info-row {
+.price-table-row,
+.info-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -1023,9 +1501,15 @@ fieldset.field { border: none; margin: 0; }
   border-bottom: 1.5px dashed var(--linea);
 }
 
-.price-table-row:last-child, .info-row:last-child { border-bottom: none; }
+.price-table-row:last-child,
+.info-row:last-child {
+  border-bottom: none;
+}
 
-.price-table dt { font-size: 0.92rem; }
+.price-table dt {
+  font-size: 0.92rem;
+}
+
 .price-table dd {
   margin: 0;
   font-weight: 900;
@@ -1035,11 +1519,30 @@ fieldset.field { border: none; margin: 0; }
   font-variant-numeric: tabular-nums;
 }
 
-.info-row dt { color: var(--humo); font-size: 0.88rem; }
-.info-row dd { margin: 0; font-size: 0.9rem; text-align: right; }
+.info-row dt {
+  color: var(--humo);
+  font-size: 0.88rem;
+}
 
-.muted { color: var(--humo); }
-.modal-actions { position: sticky; bottom: 0; padding-top: 0.4rem; background: var(--superficie); }
+.info-row dd {
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.muted {
+  color: var(--humo);
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0 -1.2rem;
+  padding: 0.6rem 1.2rem max(1.2rem, env(safe-area-inset-bottom));
+  border-top: 1.5px solid var(--linea);
+  background: var(--superficie);
+}
 
 /* ============ Pie ============ */
 .footer {
@@ -1052,26 +1555,59 @@ fieldset.field { border: none; margin: 0; }
 
 /* ============ Desktop ============ */
 @media (min-width: 640px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
-  .filter-grid { grid-template-columns: repeat(3, 1fr); }
-  .field-price { grid-column: auto; }
-  .totem { grid-template-columns: 1fr 1fr; align-items: end; }
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .field-price {
+    grid-column: auto;
+  }
+
+  .totem {
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+  }
 }
 
 @media (min-width: 768px) {
-  .modal-overlay { align-items: center; padding: 1rem; }
-  .modal { border-radius: 16px; border-bottom: var(--borde); }
+  .modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .modal {
+    border-radius: 16px;
+    border-bottom: var(--borde);
+  }
 }
 
 @media (min-width: 1024px) {
-  .grid { grid-template-columns: repeat(3, 1fr); }
-  .filter-grid { grid-template-columns: repeat(5, 1fr); }
-  .field-radius { grid-column: span 2; }
-  .header-inner { gap: 1.25rem; }
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .filter-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .field-radius {
+    grid-column: span 2;
+  }
+
+  .header-inner {
+    gap: 1.25rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

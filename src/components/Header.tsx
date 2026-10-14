@@ -4,7 +4,8 @@ import { normalizeSearchText } from '../utils/format';
 
 interface Props {
   query: string;
-  onQuery: (q: string) => void;
+  /** Solo se llama al vaciar la caja: la escritura no filtra, solo sugiere. */
+  onClearText: () => void;
   places: Place[];
   onPickPlace: (p: Place) => void;
   locationStatus: string;
@@ -15,20 +16,10 @@ interface Props {
   onToggleTheme: () => void;
 }
 
-function PumpIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path d="M5 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4 21h11M15 9h2a2 2 0 0 1 2 2v7a1.5 1.5 0 0 0 3 0V9.8a2 2 0 0 0-.6-1.4L19 6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M7 8h6v4H7z" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 /** Cabecera: marca, buscador (texto libre + sugerencias de localidades), ubicación y tema. */
 export function Header({
   query,
-  onQuery,
+  onClearText,
   places,
   onPickPlace,
   locationStatus,
@@ -43,8 +34,16 @@ export function Header({
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const activeRef = useRef<HTMLButtonElement | null>(null);
 
+  // Borrador de la caja: escribir solo filtra las SUGERENCIAS, nunca los
+  // resultados. Se sincroniza cuando la búsqueda aplicada cambia fuera
+  // (elegir ciudad, limpiar, favoritas, atrás/adelante, URL compartida).
+  const [text, setText] = useState(query);
+  useEffect(() => {
+    setText(query);
+  }, [query]);
+
   const matches = useMemo(() => {
-    const q = normalizeSearchText(query.trim());
+    const q = normalizeSearchText(text.trim());
     if (!q) return [];
     const out: Place[] = [];
     for (const p of places) {
@@ -54,12 +53,12 @@ export function Header({
       }
     }
     return out;
-  }, [places, query]);
+  }, [places, text]);
 
   // Al cambiar el texto o los datos, la selección vuelve a la primera.
   useEffect(() => {
     setActive(0);
-  }, [query, places]);
+  }, [text, places]);
 
   // Mantiene visible la opción activa al navegar con el teclado.
   useEffect(() => {
@@ -81,17 +80,15 @@ export function Header({
     onPickPlace(p);
   };
 
-  const showSuggest = open && query.trim() !== '' && matches.length > 0;
+  const showSuggest = open && text.trim() !== '' && matches.length > 0;
 
   return (
     <header className="header">
       <div className="header-inner">
-        <a className="brand" href="/" aria-label="Gasolineras España, inicio">
-          <span className="brand-icon" aria-hidden="true">
-            <PumpIcon />
-          </span>
+        <a className="brand" href="/" aria-label="Mi Gasolinera, inicio">
+          <img className="brand-icon" src="./icon.png" alt="" width={38} height={38} />
           <span className="brand-text">
-            Gasolineras <strong>España</strong>
+            Mi Gasolinera <strong className="brand-sub">- Gasolineras baratas</strong>
           </span>
         </a>
 
@@ -108,8 +105,8 @@ export function Header({
             type="search"
             className="search"
             placeholder="Buscar gasolinera, ciudad o provincia…"
-            value={query}
-            onChange={(e) => { onQuery(e.target.value); setOpen(true); }}
+            value={text}
+            onChange={(e) => { setText(e.target.value); setOpen(true); }}
             onFocus={() => setOpen(true)}
             onKeyDown={(e) => {
               if (e.key === 'ArrowDown' && matches.length > 0) {
@@ -129,11 +126,11 @@ export function Header({
             aria-controls="search-places"
             aria-autocomplete="list"
           />
-          {query && (
+          {text && (
             <button
               type="button"
               className="search-clear"
-              onClick={() => onQuery('')}
+              onClick={() => { setText(''); onClearText(); }}
               aria-label="Limpiar búsqueda"
             >
               ✕

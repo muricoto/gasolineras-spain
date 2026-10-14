@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from 'react';
 import { FUELS } from '../data/fuels';
 import type { FuelStation, UserLocation } from '../types/fuel';
 import { directionsUrl, formatDistance } from '../utils/geo';
@@ -9,11 +9,16 @@ interface Props {
   station: FuelStation | null;
   location: UserLocation | null;
   onClose: () => void;
+  /** Si se omite (vista mapa), no se muestra "Ver en mapa". */
+  onShowOnMap?: (station: FuelStation) => void;
 }
 
-/** Ficha completa de la estación en un diálogo modal accesible. */
-export function StationDetail({ station, location, onClose }: Props) {
+/** Ficha completa de la estación: bottom-sheet arrastrable en móvil, diálogo en escritorio. */
+export function StationDetail({ station, location, onClose, onShowOnMap }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ startY: number; startH: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     if (!station) return;
@@ -35,16 +40,58 @@ export function StationDetail({ station, location, onClose }: Props) {
   const open = isOpenNow(station.schedule);
   const availableFuels = FUELS.filter((f) => station.prices[f.key] !== undefined);
 
+  // Arrastre vertical del tirador: estira hasta 92dvh; si se baja más de un
+  // 18 % de la pantalla, se cierra. Solo el tirador arrastra (el resto hace scroll).
+  const onDragStart = (e: ReactTouchEvent<HTMLDivElement>) => {
+    dragRef.current = {
+      startY: e.touches[0].clientY,
+      startH: sheetRef.current?.getBoundingClientRect().height ?? 0,
+    };
+    setDragging(true);
+  };
+
+  const onDragMove = (e: ReactTouchEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    const el = sheetRef.current;
+    if (!d || !el) return;
+    const vh = window.innerHeight;
+    const h = Math.min(vh * 0.92, Math.max(180, d.startH + (e.touches[0].clientY - d.startY)));
+    el.style.maxHeight = `${h}px`;
+  };
+
+  const onDragEnd = (e: ReactTouchEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    const el = sheetRef.current;
+    setDragging(false);
+    dragRef.current = null;
+    if (!d || !el) return;
+    const dy = (e.changedTouches[0]?.clientY ?? d.startY) - d.startY;
+    if (dy > window.innerHeight * 0.18) {
+      onClose();
+      return;
+    }
+    el.style.maxHeight = '';
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose} role="presentation">
       <div
-        className="modal"
+        ref={sheetRef}
+        className={`modal${dragging ? ' dragging' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={`Detalle de ${station.name}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-head">
+        <div
+          className="sheet-handle"
+          aria-hidden="true"
+          onTouchStart={onDragStart}
+          onTouchMove={onDragMove}
+          onTouchEnd={onDragEnd}
+        />
+        <div className="modal-scroll">
+          <div className="modal-head">
           <div>
             <h2 className="modal-title">{station.name}</h2>
             <p className="modal-sub">
@@ -119,8 +166,18 @@ export function StationDetail({ station, location, onClose }: Props) {
             </div>
           )}
         </dl>
+        </div>
 
         <div className="modal-actions">
+          {station.hasCoords && onShowOnMap && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-block"
+              onClick={() => onShowOnMap(station)}
+            >
+              Ver en mapa
+            </button>
+          )}
           {station.hasCoords ? (
             <a
               className="btn btn-primary btn-block"
