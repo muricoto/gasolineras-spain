@@ -242,6 +242,14 @@ button {
   font-weight: 800;
 }
 
+/* La marca es el h1 de la SPA: anula el tamaño/peso por defecto del
+   encabezado y hereda el de .brand (móvil y escritorio). */
+.brand-text {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 800;
+}
+
 .search-wrap {
   position: relative;
   flex: 1 1 200px;

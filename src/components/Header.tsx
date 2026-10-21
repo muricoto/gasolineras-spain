@@ -87,9 +87,9 @@ export function Header({
       <div className="header-inner">
         <a className="brand" href="/" aria-label="Litro Gasolina, inicio">
           <img className="brand-icon" src="./icon.png" alt="" width={38} height={38} />
-          <span className="brand-text">
+          <h1 className="brand-text">
             Litro Gasolina <strong className="brand-sub">- Gasolineras baratas</strong>
-          </span>
+          </h1>
         </a>
 
         <div className="search-wrap" ref={wrapRef}>
