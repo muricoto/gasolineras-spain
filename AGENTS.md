@@ -52,5 +52,6 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
 - `vite.config.ts` usa `base: './'` (no volver a `/`: rompe en `file://`). Favicon relativo en `index.html`.
 - La API es configurable: `src/services/fuelStationsService.ts` antepone `VITE_API_URL` (vacío en web → relativo). Compilar la APK con `VITE_API_URL=https://<backend-público>`; sin backend público la APK abre pero sin datos.
 - Flujo: `npm run build` → `npx cap sync android` → abrir `android/` en Android Studio → Run. Emulador contra backend local: `http://10.0.2.2:3001`; dispositivo físico: `http://<IP-del-PC>:3001`.
-- Build para APK con datos reales: `$env:VITE_API_URL="https://fuel-espana.onrender.com"; npm run build` (PowerShell, solo esa compilación; no guardar en `.env` para no romper el proxy local en dev).
+- Backend desplegado: **Northflank**, `https://site--gasolineras-spain--p6kx65x2kfh6.code.run` (`GET /api/health`; verificado por DNS → `*.northflank.com`). Render fue retirado: `render.yaml` queda **sin uso**.
+- Build para APK con datos reales: `$env:VITE_API_URL="https://site--gasolineras-spain--p6kx65x2kfh6.code.run"; npm run build` (PowerShell, solo esa compilación). Como `.env` ya trae esa URL, un `npm run build` a secas también la incluye; sin ella la APK abriría sin datos.
 - Iconos: máster en `assets/icon.png` (→ `public/icon.png` para web/pestaña). Android generado a mano por densidades (`mipmap-*/ic_launcher*.png` + foreground adaptativo) porque `sharp` no instala binario en Windows.
