@@ -3,3 +3,9 @@ dist/
 *.local
 .env
 .DS_Store
+
+# Firma de Android: NUNCA se versiona (si se filtra, cualquiera podría
+# publicar actualizaciones en tu nombre).
+*.keystore
+*.jks
+keystore.properties
