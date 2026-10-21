@@ -1,4 +1,4 @@
-# AGENTS.md — Fuel España
+# AGENTS.md — Litro Gasolina
 
 Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de carburantes de España). Sin tests, linter, CI ni monorepo.
 

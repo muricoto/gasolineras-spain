@@ -1,4 +1,4 @@
-/* ============ Fuel España — identidad: tótem de carretera ============
+/* ============ Litro Gasolina — identidad: tótem de carretera ============
    Lenguaje tomado del mundo del producto: tableros de precios, señal
    vial, tickets de repostaje. La estructura se dibuja con bordes y reglas,
    no con sombras. El amarillo vial se reserva a precios y rankings. */
@@ -338,8 +338,9 @@ button {
 }
 
 /* En pantallas estrechas: fila 1 compacta (marca + acciones) y
-   buscador a fila completa. El botón de ubicación pasa a solo-icono
-   en muy estrechas (conserva aria-label) para que nada desborde. */
+   buscador a fila completa. El botón de ubicación mantiene su etiqueta
+   (en ≤480px en texto pequeño, ver más abajo) para que se entienda que
+   se puede activar la ubicación; conserva aria-label. */
 @media (max-width: 599px) {
   .header-inner {
     display: grid;
@@ -412,12 +413,17 @@ button {
 }
 
 @media (max-width: 480px) {
-  .btn-location .btn-label {
-    display: none;
+  /* La etiqueta se queda visible (clave para que se entienda que puedes
+     activar tu ubicación): texto más pequeño y paddings/gaps ajustados
+     para que marca + acciones sigan cabiendo en una fila. */
+  .btn-location {
+    padding: 0.5rem 0.45rem;
+    gap: 0.3rem;
   }
 
-  .btn-location {
-    padding: 0.5rem 0.65rem;
+  .btn-location .btn-label {
+    font-size: 0.72rem;
+    letter-spacing: -0.01em;
   }
 
   .brand-sub {
@@ -765,6 +771,19 @@ fieldset.field {
 /* ============ Interruptor Lista/Mapa ============ */
 #vista {
   scroll-margin-top: 150px;
+}
+
+/* Ancla del aviso "Estás en: …" (ubicación o localidad): la cabecera es
+   sticky (dos filas en móvil ≈ 115-120px), así que el scroll deja el
+   mensaje justo debajo de ella, ni tapado ni demasiado bajo. */
+#donde {
+  scroll-margin-top: 84px;
+}
+
+@media (max-width: 599px) {
+  #donde {
+    scroll-margin-top: 126px;
+  }
 }
 
 .view-switch {

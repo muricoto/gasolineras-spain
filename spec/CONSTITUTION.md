@@ -1,4 +1,4 @@
-# CONSTITUTION — Fuel España (SDD)
+# CONSTITUTION — Litro Gasolina (SDD)
 
 Fuente de verdad de cómo se construye este proyecto. Toda FEATURE debe
 respetarla; si una tarea la contradice, se actualiza primero este archivo.

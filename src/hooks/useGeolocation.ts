@@ -129,7 +129,7 @@ async function requestNativeFallback(
     console.log('[geo] nativo falló:', err instanceof Error ? err.message : err);
     setStatus('denied');
     setError(
-      'No se pudo obtener tu ubicación. Revisa el GPS y el permiso en Ajustes → Aplicaciones → Mi Gasolinera → Permisos.',
+      'No se pudo obtener tu ubicación. Revisa el GPS y el permiso en Ajustes → Aplicaciones → Litro Gasolina → Permisos.',
     );
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Fuel España — capa backend/proxy.
+ * Litro Gasolina — capa backend/proxy.
  *
  * Por qué existe este servidor:
  * el endpoint oficial del MITECO

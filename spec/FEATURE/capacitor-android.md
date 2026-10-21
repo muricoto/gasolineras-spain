@@ -8,7 +8,7 @@ mapa y geolocalización funcionando como en web.
 ## Contexto
 
 - CONSTITUTION §1 (flujo vía proxy propio), §5 (responsive/app) y §6.
-- `appId`: `es.fuel.spainFuel`. Nombre: "Fuel España". `webDir`: `dist`.
+- `appId`: `es.fuel.spainFuel`. Nombre: "Litro Gasolina - Gasolineras baratas". `webDir`: `dist`.
 - El equipo dispone de Android Studio (compilación final de la APK allí).
 
 ## Alcance

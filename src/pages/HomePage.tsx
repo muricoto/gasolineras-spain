@@ -102,7 +102,8 @@ export function HomePage({ theme, onToggleTheme }: Props) {
 
   // Al conceder la ubicación: resetea la búsqueda anterior, centra los
   // filtros en tu municipio (lista y mapa muestran tu ciudad) y baja hasta
-  // los botones Lista/Mapa (igual que al elegir localidad). Solo una vez.
+  // el aviso "Estás en: …" (si no está, hasta los botones Lista/Mapa).
+  // Solo una vez.
   const prevGeoStatus = useRef(geo.status);
   useEffect(() => {
     if (geo.status === 'granted' && prevGeoStatus.current !== 'granted' && geo.location) {
@@ -114,7 +115,8 @@ export function HomePage({ theme, onToggleTheme }: Props) {
         patch({ municipality: n.municipality, provinceId: n.provinceId, ccaaId: n.ccaaId });
       }
       try {
-        document.getElementById('vista')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        (document.getElementById('donde') ?? document.getElementById('vista'))
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch {
         /* noop */
       }
@@ -260,7 +262,7 @@ export function HomePage({ theme, onToggleTheme }: Props) {
             />
 
             {locationLabel && (
-              <p className="geo-place" role="status">
+              <p className="geo-place" id="donde" role="status">
                 <span aria-hidden="true">{geo.location ? '📍' : '🔍'} </span>
                 {locationLabel}
               </p>

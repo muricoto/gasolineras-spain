@@ -50,7 +50,8 @@ distinguibles de los clusters.
 - [ ] Primera visita abre en claro aunque el SO esté en oscuro.
 - [ ] Etiqueta blanca con nombre + precio; número verde = más barata de su
       ciudad, rojo = más cara, naranja = intermedias (sin diferencia, neutro).
-- [ ] Pestaña, cabecera y app Android se llaman "Gasolineras España".
+- [ ] Pestaña, cabecera y app Android se llaman "Litro Gasolina - Gasolineras
+      baratas".
 - [ ] Al conceder ubicación se resetea; el orden queda de menor a mayor.
 
 ## Verificación
