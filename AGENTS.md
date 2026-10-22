@@ -25,7 +25,7 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
 
 - Precios/coords con coma decimal: `"1,849"` → número, `""`/`"-"` = no disponible (`parseMitecoPrice`); coords `"39,211417"` → float (`parseCoord` en `fuelStationsService.ts`).
 - Forma cruda: `{ Fecha, ListaEESSPrecio[], ... }`, clave `IDEESS`; fecha oficial en `Fecha` (`"27/09/2026 14:06:30"`).
-- Feed ~12 MB / ~11.500 estaciones: mantener lista progresiva (48/pág), tarjetas memoizadas, mapa con supercluster y tope (4.000 marcadores), filtrado con `useMemo`.
+- Feed ~12 MB / ~11.500 estaciones: mantener lista progresiva (48/pág), tarjetas memoizadas, mapa con supercluster (radio 45) y tope (8.000 marcadores), filtrado con `useMemo`.
 - Mapa: el punto individual lleva etiqueta permanente con el precio del combustible activo (`Tooltip`, clase `mk-price`, formato corto en `format.ts`).
 - El estado de filtros vive en la query string (`fuel`, `prov`, `sort`, `view`, `station`); al tocar `useStationFilters.ts` preservar URLs compartibles.
 - Preferencias persistentes: `useStationFilters.ts` guarda en `localStorage` (`fuel-espana-filters`, validado al leer, query con debounce). Prioridad al arrancar: URL con params > localStorage > defecto. Un enlace compartido nunca queda contaminado por lo guardado.
@@ -39,7 +39,7 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
   (el listado ordenado + semáforo la sustituye); "Ver en mapa" en la ficha
   centra la estación (`FocusPoint`); CCAA/provincia limpian el texto.
 - Semáforo compartido lista/mapa (`priceTone` en `format.ts`): verde el mínimo, rojo el 10 % más caro, naranja el resto; elegir localidad baja a `#filtros`.
-- Tótem con selector de carburante (cambia el filtro global); mapa reencuadra al entrar/cambiar filtros, etiquetas desde zoom 12 con tope de 500.
+- Tótem con selector de carburante (cambia el filtro global); mapa reencuadra al entrar/cambiar filtros, etiquetas de precio desde zoom 8 con tope de 700.
 - Ubicación: plugin nativo `@capacitor/geolocation` en APK, `navigator` en web (aviso si no hay HTTPS).
 
 ## Responsive
@@ -54,4 +54,4 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
 - Flujo: `npm run build` → `npx cap sync android` → abrir `android/` en Android Studio → Run. Emulador contra backend local: `http://10.0.2.2:3001`; dispositivo físico: `http://<IP-del-PC>:3001`.
 - Backend desplegado: **Northflank**, `https://site--gasolineras-spain--p6kx65x2kfh6.code.run` (`GET /api/health`; verificado por DNS → `*.northflank.com`). Render fue retirado (su `render.yaml` se eliminó).
 - Build para APK con datos reales: `$env:VITE_API_URL="https://site--gasolineras-spain--p6kx65x2kfh6.code.run"; npm run build` (PowerShell, solo esa compilación). Como `.env` ya trae esa URL, un `npm run build` a secas también la incluye; sin ella la APK abriría sin datos.
-- Iconos: máster en `assets/icon.png` (→ `public/icon.png` para web/pestaña). Android generado a mano por densidades (`mipmap-*/ic_launcher*.png` + foreground adaptativo) porque `sharp` no instala binario en Windows.
+- Iconos: máster en `assets/icon.png` (opaco marino). Tras cambiarlo, ejecutar `powershell -File scripts/gen-icons.ps1` (usa System.Drawing, sin `sharp`): regenera `public/icon.png` (1024², web/pestaña) y los 15 PNG de Android (`mipmap-*/`: legacy + redondo + adaptativo), detectando el contenido sobre el fondo marino y encajándolo en la zona segura.

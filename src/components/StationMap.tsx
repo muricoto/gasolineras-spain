@@ -6,7 +6,7 @@ import Supercluster from 'supercluster';
 import type { FuelKey, FuelStation } from '../types/fuel';
 import { formatPriceShort, priceTone } from '../utils/format';
 
-const MAX_MARKERS = 4000;
+const MAX_MARKERS = 8000;
 
 interface MapPoint {
   type: 'Feature';
@@ -163,7 +163,7 @@ function ClusterLayer({
   }, [map]);
 
   const index = useMemo(() => {
-    const sc = new Supercluster({ radius: 60, maxZoom: 14, minPoints: 2 });
+    const sc = new Supercluster({ radius: 45, maxZoom: 14, minPoints: 2 });
     sc.load(points as never);
     return sc;
   }, [points]);
@@ -176,13 +176,13 @@ function ClusterLayer({
     }
   }, [index, bbox, zoom]);
 
-  // Etiquetas de precio: a partir de zoom 9 y con tope de puntos sueltos
+  // Etiquetas de precio: a partir de zoom 8 y con tope de puntos sueltos
   // para no petar el DOM cuando se ven cientos a la vez.
   let singles = 0;
   for (const c of clusters) {
     if (!(c.properties as { cluster?: boolean }).cluster) singles++;
   }
-  const showPrices = zoom >= 9 && singles <= 500;
+  const showPrices = zoom >= 8 && singles <= 700;
 
   // Precios del combustible activo por municipio, ordenados: la más barata
   // de cada ciudad va en verde y el 10 % más caro en rojo.
