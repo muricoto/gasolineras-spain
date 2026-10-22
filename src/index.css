@@ -235,6 +235,10 @@ button {
   height: 38px;
   border-radius: 9px;
   flex: none;
+  /* icon2 es vertical: se encaja sin deformar y el marino de fondo tapa
+     las franjas laterales (mismo tono que la esquina de la imagen). */
+  object-fit: contain;
+  background: #0a192c;
 }
 
 .brand-text strong {
@@ -375,6 +379,8 @@ button {
     height: 32px;
     border-radius: 8px;
     flex: none;
+    object-fit: contain;
+    background: #0a192c;
   }
 
   .brand-text {
