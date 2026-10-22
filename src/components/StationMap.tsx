@@ -55,7 +55,20 @@ function FitBounds({ fitSignal, points, focusKey }: { fitSignal: string; points:
     prev.current = fitSignal;
     if (points.length === 0) return;
     if (focusKey !== null) return;
-    const bounds = L.latLngBounds(points.map((p) => [p.geometry.coordinates[1], p.geometry.coordinates[0]] as [number, number]));
+    // Encaje robusto: con conjuntos grandes se descarta el 5 % de los extremos
+    // en lat y lng, para que una coincidencia lejana (calle homónima en otra
+    // provincia al buscar) no aleje la vista de donde está el grueso.
+    const fitBox = (vals: number[]): [number, number] => {
+      if (vals.length < 40) return [vals[0], vals[vals.length - 1]];
+      const lo = vals[Math.floor(vals.length * 0.05)];
+      const hi = vals[Math.ceil(vals.length * 0.95) - 1];
+      return [lo, hi];
+    };
+    const lats = points.map((p) => p.geometry.coordinates[1]).sort((a, b) => a - b);
+    const lngs = points.map((p) => p.geometry.coordinates[0]).sort((a, b) => a - b);
+    const [sLat, eLat] = fitBox(lats);
+    const [sLng, eLng] = fitBox(lngs);
+    const bounds = L.latLngBounds([sLat, sLng], [eLat, eLng]);
     map.fitBounds(bounds.pad(0.1), { animate: true });
   }, [fitSignal, points, map, focusKey]);
   return null;
@@ -176,13 +189,13 @@ function ClusterLayer({
     }
   }, [index, bbox, zoom]);
 
-  // Etiquetas de precio: a partir de zoom 8 y con tope de puntos sueltos
+  // Etiquetas de precio: a partir de zoom 7 y con tope de puntos sueltos
   // para no petar el DOM cuando se ven cientos a la vez.
   let singles = 0;
   for (const c of clusters) {
     if (!(c.properties as { cluster?: boolean }).cluster) singles++;
   }
-  const showPrices = zoom >= 8 && singles <= 700;
+  const showPrices = zoom >= 7 && singles <= 1000;
 
   // Precios del combustible activo por municipio, ordenados: la más barata
   // de cada ciudad va en verde y el 10 % más caro en rojo.

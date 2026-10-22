@@ -4,7 +4,7 @@ import { normalizeSearchText } from '../utils/format';
 
 interface Props {
   query: string;
-  /** Solo se llama al vaciar la caja: la escritura no filtra, solo sugiere. */
+  /** Pulsar la X: reset completo (query + filtros, conserva el combustible). Escribir no filtra, solo sugiere. */
   onClearText: () => void;
   places: Place[];
   onPickPlace: (p: Place) => void;

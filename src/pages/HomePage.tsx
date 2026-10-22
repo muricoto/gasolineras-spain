@@ -211,7 +211,7 @@ export function HomePage({ theme, onToggleTheme }: Props) {
     <>
       <Header
         query={filters.query}
-        onClearText={() => patch({ query: '' })}
+        onClearText={() => reset()}
         places={facets.places}
         onPickPlace={pickPlace}
         locationStatus={geo.status}

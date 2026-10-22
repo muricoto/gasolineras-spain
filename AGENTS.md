@@ -30,7 +30,7 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
 - El estado de filtros vive en la query string (`fuel`, `prov`, `sort`, `view`, `station`); al tocar `useStationFilters.ts` preservar URLs compartibles.
 - Preferencias persistentes: `useStationFilters.ts` guarda en `localStorage` (`fuel-espana-filters`, validado al leer, query con debounce). Prioridad al arrancar: URL con params > localStorage > defecto. Un enlace compartido nunca queda contaminado por lo guardado.
 - Favoritas: mismo hook (`fuel-espana-favorites`, `{ id, name, filters }`, sin duplicados exactos). Nombre auto (`"Villarrobledo · Diésel"`) en `FilterPanel.tsx`; aplicar sustituye todos los filtros (saneados).
-- El buscador no filtra al escribir: el texto es un borrador local (`Header.tsx`) que solo alimenta sugerencias; la búsqueda aplicada (`query`) solo cambia al elegir ciudad (`pickPlace`, que suelta la ubicación) o al limpiar.
+- El buscador no filtra al escribir: el texto es un borrador local (`Header.tsx`) que solo alimenta sugerencias; la búsqueda aplicada (`query`) solo cambia al elegir ciudad (`pickPlace`, que suelta la ubicación) o al limpiar. La **X** del campo hace reset completo (query + filtros, conserva el combustible).
 - El buscador de la cabecera sugiere localidades (`places` en facetas, `normalizeSearchText`); elegir fija municipio+provincia+CCAA y muestra el nombre en la caja. Sin banner de caché caducada (solo punto rojo).
 - Al conceder ubicación se resetea la búsqueda (el orden queda siempre de menor a mayor); al quitarla, si ordenaba por distancia vuelve a precio.
 - Sin barra de estado visible: las actualizaciones solo se anuncian por `console.log` en `HomePage.tsx` (`[fuel] precios actualizados`).
@@ -39,7 +39,7 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
   (el listado ordenado + semáforo la sustituye); "Ver en mapa" en la ficha
   centra la estación (`FocusPoint`); CCAA/provincia limpian el texto.
 - Semáforo compartido lista/mapa (`priceTone` en `format.ts`): verde el mínimo, rojo el 10 % más caro, naranja el resto; elegir localidad baja a `#filtros`.
-- Tótem con selector de carburante (cambia el filtro global); mapa reencuadra al entrar/cambiar filtros, etiquetas de precio desde zoom 8 con tope de 700.
+- Tótem con selector de carburante (cambia el filtro global); mapa reencuadra al entrar/cambiar filtros (encaje por percentiles 5–95: una coincidencia lejana no aleja la vista), etiquetas de precio desde zoom 7 con tope de 1.000.
 - Ubicación: plugin nativo `@capacitor/geolocation` en APK, `navigator` en web (aviso si no hay HTTPS).
 
 ## Responsive
