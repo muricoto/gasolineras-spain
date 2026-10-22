@@ -303,7 +303,8 @@ export function HomePage({ theme, onToggleTheme }: Props) {
             >
               Geoportal de Hidrocarburos del MITECO
             </a>
-            . Precios con impuestos incluidos según la fuente oficial.
+            . Precios con impuestos incluidos según la fuente oficial.{' '}
+            · <a href="privacidad.html">Política de privacidad</a>
           </p>
         </footer>
       </main>
