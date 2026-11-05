@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://litro-gasolina.vercel.app/sitemap.xml
+Sitemap: https://www.litrogasolina.es/sitemap.xml
