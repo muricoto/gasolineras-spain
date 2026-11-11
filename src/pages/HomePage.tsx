@@ -61,23 +61,16 @@ export function HomePage({ theme, onToggleTheme }: Props) {
     useStationFilters(stations, geo.location);
 
   /**
-   * SEO: el bloque informativo estático (index.html, indexable sin JS) se
-   * recoloca antes del pie de página una vez montada la app. El nodo vive
-   * fuera de #root, así que React no lo gestiona ni lo borra.
-   */
-  useEffect(() => {
-    const seo = document.getElementById('seo-static');
-    const footer = document.querySelector('.footer');
-    if (seo && footer && seo.previousElementSibling !== footer) {
-      footer.before(seo);
-    }
-  }, []);
-
-  /**
    * SEO: rellena el precio medio nacional de gasolina 95 y diésel del bloque
-   * estático con los datos reales del feed (mismo cálculo que el totem).
-   * Mientras no hay datos, se conserva el texto "calculando…": nunca se
-   * inventan precios.
+   * estático (index.html) con los datos reales del feed (mismo cálculo que el
+   * totem). Mientras no hay datos, se conserva el texto "calculando…": nunca
+   * se inventan precios.
+   *
+   * NOTA: el bloque NO se recoloca con JS. Un intento anterior de moverlo
+   * antes del pie con footer.before(seo) acababa dejándolo al principio del
+   * main cuando React reemplazaba sus hijos al llegar los datos (React no
+   * conoce el nodo externo). Queda tras el pie por orden del DOM: abajo del
+   * todo siempre, sin JS.
    */
   useEffect(() => {
     if (stations.length === 0) return;

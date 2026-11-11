@@ -1578,12 +1578,11 @@ fieldset.field {
 }
 
 /* ============ Contenido informativo estático (SEO) ============ */
-/* Vive fuera de #root (index.html): sin JavaScript queda tras el pie y con
-   JS la app lo recoloca antes del pie. Estilo sobrio, tipografía de archivo. */
+/* Vive fuera de #root, siempre tras el pie (index.html). Con #root vacío
+   el esqueleto pre-app ocupa el hueco y esto queda abajo del todo. */
 .seo-static {
-  margin-top: 1.5rem;
-  padding: 1.2rem 1rem 1rem;
-  border-top: 1.5px solid var(--linea);
+  margin-top: 0.5rem;
+  padding: 0 1rem 1rem;
   color: var(--tinta);
   font-size: 0.92rem;
   line-height: 1.6;

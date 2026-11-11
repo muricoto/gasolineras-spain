@@ -118,7 +118,7 @@
     </script>
   </head>
   <body>
-    <div id="root">
+    <div id="root" style="min-height:70dvh">
       <!--
         Esqueleto pre-app: mismas clases CSS que los skeletons de la app
         (States.tsx). Evita que el bloque SEO quede arriba durante la carga
@@ -160,10 +160,11 @@
     <script type="module" src="/src/main.tsx"></script>
 
     <!--
-      Contenido informativo estático (indexable sin JavaScript). La app lo
-      recoloca antes del pie al montar y rellena los precios medios con el
-      feed oficial; sin JS queda tras el pie y los precios aparecen como
-      "calculando", nunca inventados.
+      Contenido informativo estático (indexable sin JavaScript). Va SIEMPRE
+      al final del body, tras el pie de la app: no se recoloca con JS
+      (React lo dejaba arriba al re-renderizar). La app solo rellena los
+      precios medios con el feed oficial; sin JS quedan como "calculando",
+      nunca inventados.
     -->
     <section id="seo-static" class="seo-static" aria-label="Información sobre Litro Gasolina">
       <h2>Gasolineras baratas en España: compara precios cada día</h2>
