@@ -1635,6 +1635,25 @@ fieldset.field {
   font-weight: 600;
 }
 
+/* FAQ plegada (details): el contenido solo se muestra al abrir, sin trampa
+   para rastreadores (patrón de acordeón estándar, indexable). */
+.seo-static details {
+  border-top: 1.5px solid var(--linea);
+  padding: 0.35rem 0;
+}
+
+.seo-static summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.45rem 0;
+  list-style-position: outside;
+}
+
+.seo-static details p {
+  margin: 0.2rem 0 0.3rem;
+  color: var(--humo);
+}
+
 /* ============ Pie ============ */
 .footer {
   color: var(--humo);
