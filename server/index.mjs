@@ -569,11 +569,24 @@ app.get('/api/stations', async (req, res) => {
   sendStations(req, res, mode);
 });
 
-// En producción sirve el frontend compilado (dist/) con fallback SPA.
+// En producción sirve el frontend compilado (dist/). Solo `/` (con o sin
+// query params de filtros) es una página real de la SPA: el resto de rutas
+// devuelven 404 real (con la página 404.html si existe) para no generar
+// "soft 404s" en Google. Los archivos estáticos los sirve express.static.
 const distDir = path.join(ROOT, 'dist');
 if (fs.existsSync(distDir)) {
   app.use(express.static(distDir, { maxAge: '1h', index: false }));
-  app.get('*', (_req, res) => res.sendFile(path.join(distDir, 'index.html')));
+  const indexHtml = path.join(distDir, 'index.html');
+  const notFoundHtml = path.join(distDir, '404.html');
+  app.get('*', (req, res) => {
+    if (req.path === '/' || req.path === '/index.html') {
+      return res.sendFile(indexHtml);
+    }
+    if (fs.existsSync(notFoundHtml)) {
+      return res.status(404).sendFile(notFoundHtml);
+    }
+    return res.status(404).send('404 — página no encontrada');
+  });
 }
 
 app.listen(PORT, () => {

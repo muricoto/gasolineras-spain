@@ -2,22 +2,23 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="./icon.png" />
-    <link rel="apple-touch-icon" href="./icon.png" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="./favicon-180.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Litro Gasolina · Gasolineras baratas de España</title>
+    <title>Litro Gasolina · Gasolineras baratas y precios de hoy</title>
     <link rel="canonical" href="https://www.litrogasolina.es/" />
     <meta
       name="description"
-      content="Precios de gasolina, diésel y GNC de más de 11.000 gasolineras de España, con datos oficiales del MITECO. Compara y encuentra la más barata cerca de ti."
+      content="Precio de gasolina y diésel hoy en más de 11.000 gasolineras de España, con datos oficiales del MITECO. Compara precios y encuentra la gasolinera más barata cerca de ti."
     />
-    <meta property="og:title" content="Litro Gasolina · Gasolineras baratas de España" />
+    <meta property="og:title" content="Litro Gasolina · Gasolineras baratas y precios de hoy" />
     <meta
       property="og:description"
-      content="Precios de gasolina, diésel y GNC de más de 11.000 gasolineras de España, con datos oficiales del MITECO. Compara y encuentra la más barata cerca de ti."
+      content="Precio de gasolina y diésel hoy en más de 11.000 gasolineras de España, con datos oficiales del MITECO. Compara precios y encuentra la gasolinera más barata cerca de ti."
     />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_ES" />
@@ -28,10 +29,10 @@
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Litro Gasolina — gasolineras baratas de España" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Litro Gasolina · Gasolineras baratas de España" />
+    <meta name="twitter:title" content="Litro Gasolina · Gasolineras baratas y precios de hoy" />
     <meta
       name="twitter:description"
-      content="Precios de gasolina, diésel y GNC de más de 11.000 gasolineras de España, con datos oficiales del MITECO. Compara y encuentra la más barata cerca de ti."
+      content="Precio de gasolina y diésel hoy en más de 11.000 gasolineras de España, con datos oficiales del MITECO. Compara precios y encuentra la gasolinera más barata cerca de ti."
     />
     <meta name="twitter:image" content="https://www.litrogasolina.es/og.png" />
     <meta name="theme-color" content="#141a16" />
@@ -41,27 +42,137 @@
       href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <link rel="preload" as="image" href="./brand-96.png" />
     <meta name="google-site-verification" content="FBlGdLXdTdpvFTt4egHWQySutKqiMfUKsHbD51x9Kxk" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Litro Gasolina",
-        "alternateName": "Gasolineras baratas de España",
-        "url": "https://www.litrogasolina.es/",
-        "image": "https://www.litrogasolina.es/og.png",
-        "description": "Precios de gasolina, diésel y GNC de más de 11.000 gasolineras de España, con datos oficiales del MITECO. Compara y encuentra la más barata cerca de ti.",
-        "applicationCategory": "UtilitiesApplication",
-        "operatingSystem": "Web, Android",
-        "browserRequirements": "Requiere JavaScript",
-        "inLanguage": "es",
-        "isAccessibleForFree": true,
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "name": "Litro Gasolina",
+            "alternateName": "Gasolineras baratas de España",
+            "url": "https://www.litrogasolina.es/",
+            "image": "https://www.litrogasolina.es/og.png",
+            "description": "Precio de gasolina y diésel hoy en más de 11.000 gasolineras de España, con datos oficiales del MITECO. Compara precios y encuentra la gasolinera más barata cerca de ti.",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Web, Android",
+            "browserRequirements": "Requiere JavaScript",
+            "inLanguage": "es",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+          },
+          {
+            "@type": "WebSite",
+            "name": "Litro Gasolina",
+            "alternateName": "Gasolineras baratas de España",
+            "url": "https://www.litrogasolina.es/",
+            "inLanguage": "es",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://www.litrogasolina.es/?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "¿Cómo encuentro la gasolinera más barata cerca de mí?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Pulsa el botón «Cerca de mí» y concede el permiso de ubicación: el listado se ordena de la gasolinera más barata a la más cara según tu distancia. También puedes buscar tu localidad en el buscador sin conceder la ubicación."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿De dónde salen los precios de las gasolineras?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Del sistema oficial del Ministerio para la Transición Ecológica (MITECO), el Geoportal de Hidrocarburos, donde las estaciones de servicio comunican sus precios. Litro Gasolina muestra esos datos tal cual los publica la fuente oficial, junto con su fecha y hora de actualización."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Los precios de la gasolina y el diésel incluyen impuestos?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Sí. Los precios se muestran con impuestos incluidos, tal como los publica la fuente oficial."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "¿Es gratis y hace falta registrarse?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Es gratis, sin registro, sin publicidad y sin analítica. También existe una aplicación gratuita para Android."
+                }
+              }
+            ]
+          }
+        ]
       }
     </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+
+    <!--
+      Contenido informativo estático (indexable sin JavaScript). La app lo
+      recoloca antes del pie al montar y rellena los precios medios con el
+      feed oficial; sin JS queda tras el pie y los precios aparecen como
+      "calculando", nunca inventados.
+    -->
+    <section id="seo-static" class="seo-static" aria-label="Información sobre Litro Gasolina">
+      <h2>Gasolineras baratas en España: compara precios cada día</h2>
+      <p>
+        Litro Gasolina es un comparador gratuito de precios de carburantes con datos de más de
+        11.000 gasolineras de toda España: gasolina 95 y 98, diésel, diésel premium, gasóleo B y C,
+        GLP, GNC y otros carburantes que publica el sistema oficial. Busca tu localidad, activa la
+        ubicación «Cerca de mí» y ordena el listado de menor a mayor precio para saber dónde
+        repostar más barato.
+      </p>
+      <h3>Precio medio de la gasolina y el diésel hoy</h3>
+      <p id="seo-precios-hoy">Calculando con el feed oficial del MITECO…</p>
+      <h3>Cómo funciona el comparador</h3>
+      <ol>
+        <li>Elige el carburante en el totem de precio medio nacional (gasolina 95, 98, diésel, diésel premium…).</li>
+        <li>Filtra por comunidad autónoma, provincia o localidad, o pulsa «Cerca de mí» para usar tu ubicación.</li>
+        <li>El listado ordena las gasolineras de la más barata a la más cara, con semáforo de precios y mapa con etiquetas.</li>
+      </ol>
+      <h3>¿De dónde salen los precios?</h3>
+      <p>
+        Del <a href="https://geoportalgasolineras.es/geoportal-inicio" target="_blank" rel="noopener noreferrer">Geoportal de Hidrocarburos del MITECO</a>,
+        donde las estaciones de servicio comunican sus precios al sistema oficial. Litro Gasolina
+        los muestra tal cual los publica la fuente, con impuestos incluidos, y siempre indica la
+        fecha y hora de la última actualización de los datos. Cuando la fuente no responde, la
+        última información disponible se mantiene y se avisa de que no ha sido posible actualizar.
+      </p>
+      <h3>Preguntas frecuentes</h3>
+      <dl>
+        <dt>¿Cómo encuentro la gasolinera más barata cerca de mí?</dt>
+        <dd>
+          Pulsa «Cerca de mí» y concede el permiso de ubicación: el listado se ordena por precio y
+          distancia. También puedes buscar tu localidad en el buscador sin conceder la ubicación.
+        </dd>
+        <dt>¿De dónde salen los precios de las gasolineras?</dt>
+        <dd>
+          Del sistema oficial del Ministerio para la Transición Ecológica (MITECO), el Geoportal de
+          Hidrocarburos, donde las estaciones de servicio comunican sus precios. Se muestran tal
+          cual los publica la fuente oficial, junto con su fecha y hora de actualización.
+        </dd>
+        <dt>¿Los precios de la gasolina y el diésel incluyen impuestos?</dt>
+        <dd>Sí. Se muestran con impuestos incluidos, tal como los publica la fuente oficial.</dd>
+        <dt>¿Es gratis y hace falta registrarse?</dt>
+        <dd>
+          Es gratis, sin registro, sin publicidad y sin analítica. También existe una aplicación
+          gratuita para Android.
+        </dd>
+      </dl>
+    </section>
   </body>
 </html>

@@ -1577,6 +1577,64 @@ fieldset.field {
   background: var(--superficie);
 }
 
+/* ============ Contenido informativo estático (SEO) ============ */
+/* Vive fuera de #root (index.html): sin JavaScript queda tras el pie y con
+   JS la app lo recoloca antes del pie. Estilo sobrio, tipografía de archivo. */
+.seo-static {
+  margin-top: 1.5rem;
+  padding: 1.2rem 1rem 1rem;
+  border-top: 1.5px solid var(--linea);
+  color: var(--tinta);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.seo-static h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.seo-static h3 {
+  margin: 1.2rem 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.seo-static p {
+  margin: 0.35rem 0;
+  color: var(--tinta);
+}
+
+.seo-static ol {
+  margin: 0.35rem 0;
+  padding-left: 1.2rem;
+}
+
+.seo-static li {
+  margin: 0.25rem 0;
+}
+
+.seo-static dl {
+  margin: 0.35rem 0 0;
+}
+
+.seo-static dt {
+  font-weight: 700;
+  margin-top: 0.6rem;
+}
+
+.seo-static dd {
+  margin: 0.15rem 0 0;
+  color: var(--humo);
+}
+
+.seo-static a {
+  color: var(--surtidor);
+  font-weight: 600;
+}
+
 /* ============ Pie ============ */
 .footer {
   color: var(--humo);

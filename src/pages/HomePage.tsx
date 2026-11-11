@@ -11,9 +11,9 @@ import { useFuelStations } from '../hooks/useFuelStations';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useStationFilters } from '../hooks/useStationFilters';
 import type { FavoriteSearch, Place } from '../hooks/useStationFilters';
-import type { FuelStation, StationFilters } from '../types/fuel';
+import type { FuelKey, FuelStation, StationFilters } from '../types/fuel';
 import { formatDistance, nearestMunicipality } from '../utils/geo';
-import { formatPlaceName } from '../utils/format';
+import { formatPlaceName, formatPrice, formatRelativeTime } from '../utils/format';
 
 const StationMap = lazy(() =>
   import('../components/StationMap').then((m) => ({ default: m.StationMap })),
@@ -59,6 +59,51 @@ export function HomePage({ theme, onToggleTheme }: Props) {
   const geo = useGeolocation();
   const { filters, patch, reset, facets, filtered, debouncedQuery, favorites, saveFavorite, applyFavorite, deleteFavorite } =
     useStationFilters(stations, geo.location);
+
+  /**
+   * SEO: el bloque informativo estático (index.html, indexable sin JS) se
+   * recoloca antes del pie de página una vez montada la app. El nodo vive
+   * fuera de #root, así que React no lo gestiona ni lo borra.
+   */
+  useEffect(() => {
+    const seo = document.getElementById('seo-static');
+    const footer = document.querySelector('.footer');
+    if (seo && footer && seo.previousElementSibling !== footer) {
+      footer.before(seo);
+    }
+  }, []);
+
+  /**
+   * SEO: rellena el precio medio nacional de gasolina 95 y diésel del bloque
+   * estático con los datos reales del feed (mismo cálculo que el totem).
+   * Mientras no hay datos, se conserva el texto "calculando…": nunca se
+   * inventan precios.
+   */
+  useEffect(() => {
+    if (stations.length === 0) return;
+    const avg = (fuel: FuelKey) => {
+      let sum = 0;
+      let count = 0;
+      for (const s of stations) {
+        const p = s.prices[fuel];
+        if (p === undefined) continue;
+        sum += p;
+        count++;
+      }
+      return count > 0 ? sum / count : undefined;
+    };
+    const g = avg('gasoline95');
+    const d = avg('diesel');
+    if (g === undefined || d === undefined) return;
+    const el = document.getElementById('seo-precios-hoy');
+    if (el) {
+      el.textContent =
+        `Gasolina 95: ${formatPrice(g)} de media · Diésel: ${formatPrice(d)} de media. ` +
+        'Precio medio nacional calculado con los datos oficiales del MITECO' +
+        (updatedAt ? `, actualizados ${formatRelativeTime(updatedAt)}.` : '.');
+    }
+  }, [stations, updatedAt]);
+
 
   const [view, setView] = useState<'list' | 'map'>(viewFromUrl);
   const [selected, setSelected] = useState<FuelStation | null>(null);
