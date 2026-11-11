@@ -2,7 +2,6 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="./favicon-180.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -119,7 +118,45 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        Esqueleto pre-app: mismas clases CSS que los skeletons de la app
+        (States.tsx). Evita que el bloque SEO quede arriba durante la carga
+        (con #root vacío era lo único visible). React lo sustituye al montar.
+      -->
+      <main class="container" aria-hidden="true">
+        <div class="filters filters-skeleton">
+          <div class="sk sk-chips"></div>
+          <div class="sk sk-bar"></div>
+        </div>
+        <div class="grid">
+          <div class="card skeleton-card">
+            <div class="sk sk-title"></div>
+            <div class="sk sk-line"></div>
+            <div class="sk sk-line short"></div>
+            <div class="sk sk-price"></div>
+            <div class="sk sk-price"></div>
+            <div class="sk sk-btn"></div>
+          </div>
+          <div class="card skeleton-card">
+            <div class="sk sk-title"></div>
+            <div class="sk sk-line"></div>
+            <div class="sk sk-line short"></div>
+            <div class="sk sk-price"></div>
+            <div class="sk sk-price"></div>
+            <div class="sk sk-btn"></div>
+          </div>
+          <div class="card skeleton-card">
+            <div class="sk sk-title"></div>
+            <div class="sk sk-line"></div>
+            <div class="sk sk-line short"></div>
+            <div class="sk sk-price"></div>
+            <div class="sk sk-price"></div>
+            <div class="sk sk-btn"></div>
+          </div>
+        </div>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
 
     <!--
