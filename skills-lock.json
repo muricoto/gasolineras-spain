@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "skills": {
+    "competitor-analysis": {
+      "source": "every-app/open-seo",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/competitor-analysis/SKILL.md",
+      "computedHash": "987d6a5811626a4d96341790b9cb195e91becdfbfec025990ac8f7d94bbdd680"
+    },
+    "developer-keyword-research": {
+      "source": "samber/developer-relations-skills",
+      "sourceType": "github",
+      "skillPath": "skills/developer-keyword-research/SKILL.md",
+      "computedHash": "dfbc931506d834e23870c4ca96b78ab878853bbe13af463bfdbe8479c9a629f1"
+    },
+    "seo-content": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "skillPath": "skills/seo-content/SKILL.md",
+      "computedHash": "4f572657d478b9b69ff3b0a0e8827bb0f5e3f16a5bee0e94002d8204fdf2b8be"
+    },
+    "seo-technical": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "skillPath": "skills/seo-technical/SKILL.md",
+      "computedHash": "04ff217ee925bdcedd35f5ba82340d0a6e29fe0a217c0bfa4649d339dd22666d"
+    }
+  }
+}
