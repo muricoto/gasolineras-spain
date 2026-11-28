@@ -1579,10 +1579,15 @@ fieldset.field {
 
 /* ============ Contenido informativo estático (SEO) ============ */
 /* Vive fuera de #root, siempre tras el pie (index.html). Con #root vacío
-   el esqueleto pre-app ocupa el hueco y esto queda abajo del todo. */
+   el esqueleto pre-app ocupa el hueco y esto queda abajo del todo.
+   Mismo ancho y márgenes que .container para alinear con el resto de la
+   página (antes ocupaba todo el ancho de la ventana). */
 .seo-static {
-  margin-top: 0.5rem;
+  max-width: 1280px;
+  margin: 0.5rem auto 0;
   padding: 0 1rem 1rem;
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
   color: var(--tinta);
   font-size: 0.92rem;
   line-height: 1.6;
