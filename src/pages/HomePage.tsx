@@ -217,6 +217,13 @@ export function HomePage({ theme, onToggleTheme }: Props) {
     }
     patch(p);
   };
+  // Desactivar la ubicación suelta también el territorio que se fijó con
+  // ella: era contexto de la sesión, no una búsqueda que deba quedar
+  // guardada para la próxima visita.
+  const deactivateLocation = () => {
+    clearLocation();
+    patch({ ccaaId: '', provinceId: '', municipality: '', radiusKm: null });
+  };
   const manualApplyFavorite = (fav: FavoriteSearch) => {
     clearLocation();
     applyFavorite(fav);
@@ -255,7 +262,7 @@ export function HomePage({ theme, onToggleTheme }: Props) {
         locationStatus={geo.status}
         hasLocation={geo.location !== null}
         onUseLocation={geo.request}
-        onClearLocation={geo.clear}
+        onClearLocation={deactivateLocation}
         theme={theme}
         onToggleTheme={onToggleTheme}
       />

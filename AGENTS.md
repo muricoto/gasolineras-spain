@@ -29,10 +29,11 @@ Frontend React 19 + TypeScript + Vite + proxy Express hacia MITECO (precios de c
 - Mapa: el punto individual lleva etiqueta permanente con el precio del combustible activo (`Tooltip`, clase `mk-price`, formato corto en `format.ts`).
 - El estado de filtros vive en la query string (`fuel`, `prov`, `sort`, `view`, `station`); al tocar `useStationFilters.ts` preservar URLs compartibles.
 - Preferencias persistentes: `useStationFilters.ts` guarda en `localStorage` (`fuel-espana-filters`, validado al leer, query con debounce). Prioridad al arrancar: URL con params > localStorage > defecto. Un enlace compartido nunca queda contaminado por lo guardado.
+- La ubicación es contexto de sesión, no preferencia: el municipio/provincia/CCAA derivados de ella y el orden por distancia no se escriben en `localStorage` (ni en la URL) y, al desactivarla, se sueltan los filtros de territorio. Así, reabrir la web o la APK nunca arranca con la última ubicación.
 - Favoritas: mismo hook (`fuel-espana-favorites`, `{ id, name, filters }`, sin duplicados exactos). Nombre auto (`"Villarrobledo · Diésel"`) en `FilterPanel.tsx`; aplicar sustituye todos los filtros (saneados).
 - El buscador no filtra al escribir: el texto es un borrador local (`Header.tsx`) que solo alimenta sugerencias; la búsqueda aplicada (`query`) solo cambia al elegir ciudad (`pickPlace`, que suelta la ubicación) o al limpiar. La **X** del campo hace reset completo (query + filtros, conserva el combustible).
 - El buscador de la cabecera sugiere localidades (`places` en facetas, `normalizeSearchText`); elegir fija municipio+provincia+CCAA y muestra el nombre en la caja. Sin banner de caché caducada (solo punto rojo).
-- Al conceder ubicación se resetea la búsqueda (el orden queda siempre de menor a mayor); al quitarla, si ordenaba por distancia vuelve a precio.
+- Al conceder ubicación se resetea la búsqueda (el orden queda siempre de menor a mayor); al quitarla se suelta el territorio fijado por ella y, si ordenaba por distancia, vuelve a precio.
 - Sin barra de estado visible: las actualizaciones solo se anuncian por `console.log` en `HomePage.tsx` (`[fuel] precios actualizados`).
 - Tema inicial siempre claro (`App.tsx`); etiquetas de mapa blancas (`.mk-price`) frente a clusters oscuros.
 - Lista paginada (15/pág, `StationList.tsx`); sin sección "Las más baratas"

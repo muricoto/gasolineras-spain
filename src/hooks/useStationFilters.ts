@@ -25,6 +25,14 @@ const DEFAULT_FILTERS: StationFilters = {
 /** Clave de localStorage donde se guardan las preferencias de búsqueda. */
 const STORAGE_KEY = 'fuel-espana-filters';
 
+/**
+ * Versión del formato guardado. La v1 no distinguía la ubicación de una
+ * búsqueda manual y guardaba el municipio derivado de ella; al leer una v1 se
+ * descarta el territorio para que el primer arranque tras la actualización ya
+ * salga limpio.
+ */
+const STORAGE_VERSION = 2;
+
 /** true si la URL trae algún filtro (enlace compartido): manda sobre lo guardado. */
 function hasUrlParams(): boolean {
   try {
@@ -61,7 +69,21 @@ function readFromStorage(): StationFilters | null {
     if (!raw) return null;
     const s: unknown = JSON.parse(raw);
     if (!s || typeof s !== 'object') return null;
-    return sanitizeFilters(s as Partial<StationFilters>);
+    const saved = s as Partial<StationFilters> & { v?: unknown };
+    const filters = sanitizeFilters(saved);
+    if (saved.v !== STORAGE_VERSION) {
+      // Formato antiguo: el territorio pudo venir de la ubicación, así que se
+      // suelta (se conservan combustible, precio, orden manual y texto).
+      return {
+        ...filters,
+        ccaaId: '',
+        provinceId: '',
+        municipality: '',
+        sort: filters.sort === 'distance' ? 'price-asc' : filters.sort,
+        radiusKm: null,
+      };
+    }
+    return filters;
   } catch {
     return null;
   }
@@ -198,16 +220,33 @@ export function useStationFilters(stations: FuelStation[], location: UserLocatio
 
   useEffect(() => {
     const snapshot = { ...filters, query: debouncedQuery };
-    writeToUrl(snapshot);
+    // La ubicación es contexto de la sesión, no una búsqueda: el municipio,
+    // provincia y CCAA que se derivan de ella (y el orden por distancia) no
+    // van a la URL ni a localStorage, para que al volver a abrir la web o la
+    // APK se arranque limpio en vez de con la última ubicación.
+    const persistable: StationFilters = location
+      ? {
+          ...snapshot,
+          ccaaId: '',
+          provinceId: '',
+          municipality: '',
+          sort: snapshot.sort === 'distance' ? 'price-asc' : snapshot.sort,
+          radiusKm: null,
+        }
+      : snapshot;
+    writeToUrl(persistable);
+    // Con ubicación activa no se guardan preferencias: se conserva lo último
+    // que el usuario buscó manualmente (o los valores por defecto).
+    if (location) return;
     // Guarda las preferencias para la próxima visita (query con debounce
     // para no escribir en cada tecla; localStorage puede fallar en privado).
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...snapshot, v: STORAGE_VERSION }));
     } catch {
       /* almacenamiento no disponible */
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, filters.fuel, filters.ccaaId, filters.provinceId, filters.municipality, filters.maxPrice, filters.sort, filters.radiusKm]);
+  }, [debouncedQuery, filters.fuel, filters.ccaaId, filters.provinceId, filters.municipality, filters.maxPrice, filters.sort, filters.radiusKm, location]);
 
   const patch = (p: Partial<StationFilters>) =>
     setFilters((f) => {
